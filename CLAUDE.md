@@ -9,6 +9,8 @@ Built as an Angular 21 SPA scaffolded with Angular CLI 21.2.6.
 ## Tech Stack
 
 - **Framework**: Angular 21.2.x (standalone components)
+- **UI Components**: Angular Material 21.2.x (Material 3, `@angular/material`)
+- **Icons**: Google Material Icons (via Google Fonts CDN)
 - **Styling**: Tailwind CSS 4.x (via `@tailwindcss/postcss`)
 - **Testing**: Vitest 4.x (`ng test`)
 - **Validation**: Zod 4.x
@@ -66,3 +68,6 @@ Pure, reusable, side-effect-free functions live in `src/utils/`. No Angular depe
 - App entry files live in `src/entry/` (not the default `src/app/`)
 - Prefer signals for reactivity
 - Use Zod schemas for runtime data validation
+- Use Angular Material components for UI; import per-component modules (e.g. `MatButtonModule`, `MatIconModule`) in standalone components
+- Use `<mat-icon>` for icons (Google Material Icons)
+- Theme defined in `src/material-theme.scss` (Material 3, azure/blue palette)
