@@ -1,0 +1,26 @@
+<div class="shell-container">
+  <nav
+    class="sidenav"
+    [class.expanded]="ui.isSidenavExpanded()"
+    [@sidenavWidth]="ui.isSidenavExpanded() ? 'expanded' : 'collapsed'"
+  >
+    <div class="toggle-btn">
+      <button mat-icon-button (click)="ui.toggleSidenav()">
+        <mat-icon>{{ ui.isSidenavExpanded() ? 'chevron_left' : 'menu' }}</mat-icon>
+      </button>
+    </div>
+
+    <mat-nav-list>
+      @for (item of navItems; track item.route) {
+        <a mat-list-item [routerLink]="item.route" routerLinkActive="active-link">
+          <mat-icon matListItemIcon>{{ item.icon }}</mat-icon>
+          <span matListItemTitle class="nav-label">{{ item.label }}</span>
+        </a>
+      }
+    </mat-nav-list>
+  </nav>
+
+  <main class="shell-content">
+    <router-outlet />
+  </main>
+</div>

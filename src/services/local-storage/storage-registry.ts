@@ -3,7 +3,7 @@ import { z, ZodType } from 'zod';
 // Register all localStorage keys and their schemas here.
 // To add a new key: add an entry to this object.
 export const STORAGE_REGISTRY = {
-  // example: sessions: z.array(SessionSchema),
+  sidenavExpanded: z.boolean(),
 } satisfies Record<string, ZodType>;
 
 export type StorageRegistry = typeof STORAGE_REGISTRY;

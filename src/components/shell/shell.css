@@ -1,0 +1,44 @@
+.shell-container {
+  display: flex;
+  height: 100%;
+}
+
+.sidenav {
+  flex-shrink: 0;
+  overflow-x: hidden;
+  border-right: 1px solid var(--mat-sys-outline-variant);
+}
+
+.shell-content {
+  flex: 1;
+  overflow: auto;
+  padding: 16px;
+}
+
+.toggle-btn {
+  display: flex;
+  justify-content: center;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--mat-sys-outline-variant);
+}
+
+.sidenav.expanded .toggle-btn {
+  justify-content: flex-end;
+  padding-right: 4px;
+}
+
+.nav-label {
+  opacity: 0;
+  transition: opacity 150ms ease;
+  white-space: nowrap;
+}
+
+.sidenav.expanded .nav-label {
+  opacity: 1;
+}
+
+.active-link {
+  background-color: var(--mat-sys-secondary-container);
+  color: var(--mat-sys-on-secondary-container);
+  border-radius: 0 !important;
+}
