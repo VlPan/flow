@@ -20,6 +20,7 @@ export interface ChartData {
   buckets: Bucket[];
   activeVectors: FlowVector[];
   isWeekly: boolean;
+  filteredRecords: SessionRecord[];
 }
 
 // ── Internal helpers ──────────────────────────────────────────────────────────
@@ -115,7 +116,7 @@ export function buildChartData(
   } else if (range === '100d') {
     startDate = addDays(todayNorm, -99);
   } else {
-    if (records.length === 0) return { buckets: [], activeVectors: [], isWeekly: false };
+    if (records.length === 0) return { buckets: [], activeVectors: [], isWeekly: false, filteredRecords: [] };
     const earliestStr = records.reduce(
       (min, r) => (r.startDate < min ? r.startDate : min),
       records[0].startDate,
@@ -139,7 +140,7 @@ export function buildChartData(
   );
   const activeVectors = allVectors.filter(v => usedIds.has(v.id));
 
-  return { buckets, activeVectors, isWeekly };
+  return { buckets, activeVectors, isWeekly, filteredRecords: rangeRecords };
 }
 
 export function toPtsOptions(data: ChartData): EChartsCoreOption {
@@ -201,5 +202,272 @@ export function toTimeOptions(data: ChartData): EChartsCoreOption {
       data: buckets.map(b => b.minutesByVector[v.id] ?? 0),
       itemStyle: { color: v.color || DEFAULT_VECTOR_COLOR },
     })),
+  };
+}
+
+// ── New charts ────────────────────────────────────────────────────────────────
+
+export function toFlowScoreTrendOptions(data: ChartData): EChartsCoreOption {
+  const { buckets, filteredRecords, isWeekly } = data;
+
+  const scoresByDate = new Map<string, number[]>();
+  for (const r of filteredRecords) {
+    const arr = scoresByDate.get(r.startDate) ?? [];
+    arr.push(r.flowScore);
+    scoresByDate.set(r.startDate, arr);
+  }
+
+  const windowSize = isWeekly ? 4 : 7;
+  const trendData = buckets.map((b, i) => {
+    const windowBuckets = buckets.slice(Math.max(0, i - windowSize + 1), i + 1);
+    const scores: number[] = windowBuckets.flatMap(wb => scoresByDate.get(wb.key) ?? []);
+    return scores.length > 0
+      ? +(scores.reduce((a, s) => a + s, 0) / scores.length).toFixed(1)
+      : null;
+  });
+
+  const windowLabel = isWeekly ? '4-week' : '7-day';
+  return {
+    grid: { left: 48, right: 16, top: 16, bottom: 64 },
+    tooltip: {
+      trigger: 'axis',
+      formatter: (params: any[]) => {
+        const val = params[0].value;
+        return val != null
+          ? `${params[0].axisValue}<br/>Avg flow score (${windowLabel}): <b>${val}</b>`
+          : `${params[0].axisValue}<br/>No data`;
+      },
+    },
+    xAxis: {
+      type: 'category',
+      data: buckets.map(b => b.label),
+      axisLabel: { rotate: 40, fontSize: 11 },
+    },
+    yAxis: { type: 'value', name: 'score', min: 0, max: 10, nameTextStyle: { fontSize: 11 } },
+    series: [{
+      type: 'line',
+      data: trendData,
+      smooth: true,
+      connectNulls: false,
+      itemStyle: { color: '#ab47bc' },
+      areaStyle: { color: 'rgba(171,71,188,0.1)' },
+      lineStyle: { width: 2 },
+      symbol: 'circle',
+      symbolSize: 4,
+    }],
+  };
+}
+
+export function toVectorDonutOptions(data: ChartData): EChartsCoreOption {
+  const { buckets, activeVectors } = data;
+
+  const totalByVector: Record<string, number> = {};
+  for (const b of buckets) {
+    for (const [id, mins] of Object.entries(b.minutesByVector)) {
+      totalByVector[id] = (totalByVector[id] ?? 0) + mins;
+    }
+  }
+
+  const pieData = activeVectors
+    .filter(v => (totalByVector[v.id] ?? 0) > 0)
+    .map(v => ({
+      name: `${v.icon} ${v.name}`,
+      value: totalByVector[v.id],
+      itemStyle: { color: v.color || DEFAULT_VECTOR_COLOR },
+    }));
+
+  return {
+    tooltip: {
+      trigger: 'item',
+      formatter: (p: any) => `${p.name}<br/><b>${p.value} min</b> (${p.percent}%)`,
+    },
+    legend: { bottom: 0, type: 'scroll', textStyle: { fontSize: 11 } },
+    series: [{
+      type: 'pie',
+      radius: ['40%', '70%'],
+      center: ['50%', '44%'],
+      data: pieData,
+      label: { show: false },
+      emphasis: { label: { show: true, fontSize: 13, fontWeight: 'bold' } },
+    }],
+  };
+}
+
+export function toTimeOfDayHeatmapOptions(data: ChartData): EChartsCoreOption {
+  const { filteredRecords } = data;
+
+  // dayIdx: 0=Mon..6=Sun, hourIdx: 0..23
+  const minuteGrid: number[][] = Array.from({ length: 7 }, () => new Array(24).fill(0));
+
+  for (const r of filteredRecords) {
+    const date = new Date(r.startedAt);
+    const dayIdx = (date.getDay() + 6) % 7;
+    const hourIdx = date.getHours();
+    minuteGrid[dayIdx][hourIdx] += r.sessionMinutes;
+  }
+
+  const heatData: [number, number, number][] = [];
+  for (let d = 0; d < 7; d++) {
+    for (let h = 0; h < 24; h++) {
+      heatData.push([d, h, minuteGrid[d][h]]);
+    }
+  }
+
+  const maxVal = Math.max(...heatData.map(item => item[2]), 1);
+
+  return {
+    tooltip: {
+      formatter: (p: any) => {
+        const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+        return `${days[p.data[0]]} ${p.data[1]}:00<br/><b>${p.data[2]} min</b>`;
+      },
+    },
+    grid: { left: 48, right: 80, top: 8, bottom: 32 },
+    xAxis: {
+      type: 'category',
+      data: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+      splitArea: { show: true },
+      axisLabel: { fontSize: 11 },
+    },
+    yAxis: {
+      type: 'category',
+      data: Array.from({ length: 24 }, (_, i) => `${i}:00`),
+      splitArea: { show: true },
+      inverse: true,
+      axisLabel: { fontSize: 10 },
+    },
+    visualMap: {
+      min: 0,
+      max: maxVal,
+      calculable: true,
+      orient: 'vertical',
+      right: 0,
+      top: 'center',
+      textStyle: { fontSize: 10 },
+      inRange: { color: ['#e3f2fd', '#0277bd'] },
+    },
+    series: [{
+      type: 'heatmap',
+      data: heatData,
+      label: { show: false },
+      emphasis: { itemStyle: { shadowBlur: 6, shadowColor: 'rgba(0,0,0,0.3)' } },
+    }],
+  };
+}
+
+export function toDayOfWeekOptions(data: ChartData): EChartsCoreOption {
+  const { filteredRecords } = data;
+  const minutesByDay: number[] = new Array(7).fill(0);
+
+  for (const r of filteredRecords) {
+    const [y, m, d] = r.startDate.split('-').map(Number);
+    const dayIdx = (new Date(y, m - 1, d).getDay() + 6) % 7;
+    minutesByDay[dayIdx] += r.sessionMinutes;
+  }
+
+  return {
+    grid: { left: 56, right: 16, top: 16, bottom: 40 },
+    tooltip: {
+      trigger: 'axis',
+      formatter: (params: any[]) => `${params[0].axisValue}<br/><b>${params[0].value} min</b>`,
+    },
+    xAxis: {
+      type: 'category',
+      data: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+      axisLabel: { fontSize: 11 },
+    },
+    yAxis: { type: 'value', name: 'min', nameTextStyle: { fontSize: 11 } },
+    series: [{
+      type: 'bar',
+      data: minutesByDay.map((value, index) => ({
+        value,
+        itemStyle: { color: index >= 5 ? '#ff8a65' : '#42a5f5' },
+      })),
+      barMinHeight: 1,
+    }],
+  };
+}
+
+const DURATION_BUCKETS = [
+  { label: '<15 min', min: 0, max: 15 },
+  { label: '15–30 min', min: 15, max: 30 },
+  { label: '30–45 min', min: 30, max: 45 },
+  { label: '45–60 min', min: 45, max: 60 },
+  { label: '60–90 min', min: 60, max: 90 },
+  { label: '90+ min', min: 90, max: Infinity },
+];
+
+export function toSessionLengthDistOptions(data: ChartData): EChartsCoreOption {
+  const { filteredRecords } = data;
+
+  const counts = DURATION_BUCKETS.map(b =>
+    filteredRecords.filter(r => r.sessionMinutes >= b.min && r.sessionMinutes < b.max).length,
+  );
+
+  return {
+    grid: { left: 48, right: 16, top: 16, bottom: 40 },
+    tooltip: {
+      trigger: 'axis',
+      formatter: (params: any[]) => `${params[0].axisValue}<br/><b>${params[0].value} sessions</b>`,
+    },
+    xAxis: {
+      type: 'category',
+      data: DURATION_BUCKETS.map(b => b.label),
+      axisLabel: { fontSize: 11 },
+    },
+    yAxis: { type: 'value', name: 'sessions', minInterval: 1, nameTextStyle: { fontSize: 11 } },
+    series: [{
+      type: 'bar',
+      data: counts,
+      barMinHeight: 1,
+      itemStyle: { color: '#66bb6a' },
+    }],
+  };
+}
+
+export function toScoreVsLengthOptions(data: ChartData): EChartsCoreOption {
+  const { filteredRecords, activeVectors } = data;
+  const vectorMap = new Map(activeVectors.map(v => [v.id, v]));
+
+  const pointsByVector = new Map<string, [number, number][]>();
+  for (const r of filteredRecords) {
+    const arr = pointsByVector.get(r.flowVectorId) ?? [];
+    arr.push([r.sessionMinutes, r.flowScore]);
+    pointsByVector.set(r.flowVectorId, arr);
+  }
+
+  const series = [...pointsByVector.entries()].map(([id, points]) => {
+    const v = vectorMap.get(id);
+    return {
+      name: v ? `${v.icon} ${v.name}` : id,
+      type: 'scatter',
+      data: points,
+      symbolSize: 8,
+      itemStyle: { color: v?.color || DEFAULT_VECTOR_COLOR },
+    };
+  });
+
+  return {
+    grid: { left: 56, right: 16, top: 16, bottom: 48 },
+    tooltip: {
+      trigger: 'item',
+      formatter: (p: any) =>
+        `${p.seriesName}<br/>Duration: <b>${p.data[0]} min</b><br/>Flow score: <b>${p.data[1]}</b>`,
+    },
+    legend: { bottom: 0, type: 'scroll', textStyle: { fontSize: 11 } },
+    xAxis: {
+      type: 'value',
+      name: 'duration (min)',
+      nameLocation: 'end',
+      nameTextStyle: { fontSize: 11 },
+    },
+    yAxis: {
+      type: 'value',
+      name: 'flow score',
+      min: 0,
+      max: 10,
+      nameTextStyle: { fontSize: 11 },
+    },
+    series,
   };
 }

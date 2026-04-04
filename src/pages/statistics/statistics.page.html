@@ -37,4 +37,70 @@
     ></div>
   </div>
 
+  <!-- Flow score trend -->
+  <div class="flex flex-col gap-2">
+    <h2 class="text-sm font-medium text-gray-500 uppercase tracking-wide">Flow score trend</h2>
+    <div
+      echarts
+      [options]="stats.flowScoreTrendOptions()"
+      class="w-full"
+      style="height: 300px;"
+    ></div>
+  </div>
+
+  <!-- Two-column row: vector donut + day-of-week -->
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <div class="flex flex-col gap-2">
+      <h2 class="text-sm font-medium text-gray-500 uppercase tracking-wide">Time by vector</h2>
+      <div
+        echarts
+        [options]="stats.vectorDonutOptions()"
+        class="w-full"
+        style="height: 320px;"
+      ></div>
+    </div>
+    <div class="flex flex-col gap-2">
+      <h2 class="text-sm font-medium text-gray-500 uppercase tracking-wide">By day of week</h2>
+      <div
+        echarts
+        [options]="stats.dayOfWeekOptions()"
+        class="w-full"
+        style="height: 320px;"
+      ></div>
+    </div>
+  </div>
+
+  <!-- Time-of-day heatmap -->
+  <div class="flex flex-col gap-2">
+    <h2 class="text-sm font-medium text-gray-500 uppercase tracking-wide">Time-of-day activity</h2>
+    <div
+      echarts
+      [options]="stats.timeOfDayHeatmapOptions()"
+      class="w-full"
+      style="height: 480px;"
+    ></div>
+  </div>
+
+  <!-- Two-column row: session length dist + score vs length -->
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <div class="flex flex-col gap-2">
+      <h2 class="text-sm font-medium text-gray-500 uppercase tracking-wide">Session length distribution</h2>
+      <div
+        echarts
+        [options]="stats.sessionLengthDistOptions()"
+        class="w-full"
+        style="height: 280px;"
+      ></div>
+    </div>
+    <div class="flex flex-col gap-2">
+      <h2 class="text-sm font-medium text-gray-500 uppercase tracking-wide">Score vs duration</h2>
+      <div
+        echarts
+        [options]="stats.scoreVsLengthOptions()"
+        class="w-full"
+        style="height: 280px;"
+      ></div>
+    </div>
+  </div>
+
 </div>
