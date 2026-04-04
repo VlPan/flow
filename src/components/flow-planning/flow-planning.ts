@@ -18,7 +18,8 @@ import { FlowVectorsService } from '../../services/flow-vectors/flow-vectors.ser
 import { SessionService } from '../../services/session/session.service';
 import { SessionSettingsService } from '../../services/session-settings/session-settings.service';
 import { PlanningRow } from '../../models/planning-row.model';
-import { FlowVector } from '../../models/flow-vector.model';
+import { FlowVector, BREAK_VECTOR } from '../../models/flow-vector.model';
+import { SessionRecord } from '../../models/session.model';
 import { toLocalDateString } from '../../utils/date.utils';
 
 @Component({
@@ -113,7 +114,76 @@ export class FlowPlanning {
   }
 
   protected onStart(row: PlanningRow): void {
-    this.sessionService.start(row);
+    const recentRecord = this.getLastSessionWithinHour();
+    if (!recentRecord) {
+      this.sessionService.start(row);
+      return;
+    }
+
+    const minutesAgo = Math.floor(
+      (Date.now() - new Date(recentRecord.finishedAt).getTime()) / 60000
+    );
+    this.dialog
+      .open(ConfirmDialog, {
+        width: '400px',
+        data: {
+          message: `Your last session ended ${minutesAgo} minute${minutesAgo === 1 ? '' : 's'} ago. Were you on a flow break?`,
+          confirmLabel: 'Yes, I was',
+          cancelLabel: 'No, start fresh',
+        },
+      })
+      .afterClosed()
+      .subscribe((confirmed: boolean) => {
+        if (!confirmed) {
+          this.sessionService.start(row);
+          return;
+        }
+        this.openBreakDialog(recentRecord.finishedAt, new Date().toISOString(), row);
+      });
+  }
+
+  private getLastSessionWithinHour(): SessionRecord | null {
+    const today = toLocalDateString(new Date());
+    const records = this.sessionService
+      .records()
+      .filter(r => r.startDate === today)
+      .sort((a, b) => new Date(b.finishedAt).getTime() - new Date(a.finishedAt).getTime());
+    const last = records[0];
+    if (!last) return null;
+    return Date.now() - new Date(last.finishedAt).getTime() < 60 * 60 * 1000 ? last : null;
+  }
+
+  private openBreakDialog(breakStartedAt: string, breakFinishedAt: string, row: PlanningRow): void {
+    const sessionMinutes = Math.max(
+      1,
+      Math.floor((new Date(breakFinishedAt).getTime() - new Date(breakStartedAt).getTime()) / 60000)
+    );
+    this.dialog
+      .open(SessionCompleteDialog, {
+        width: '480px',
+        data: {
+          sessionMinutes,
+          flowScore: 5,
+          shortDescription: '',
+          vectorName: BREAK_VECTOR.name,
+          vectorIcon: BREAK_VECTOR.icon,
+          isEdit: false,
+          isBreak: true,
+        } satisfies SessionCompleteDialogData,
+      })
+      .afterClosed()
+      .subscribe((result?: SessionCompleteDialogResult) => {
+        if (result) {
+          this.sessionService.completeBreak(
+            breakStartedAt,
+            breakFinishedAt,
+            result.sessionMinutes,
+            result.flowScore,
+            result.shortDescription
+          );
+        }
+        this.sessionService.start(row);
+      });
   }
 
   protected openCompleteDialog(): void {

@@ -29,7 +29,7 @@ export class FlowCompleted {
 
   private readonly vectorsMap = computed(() => {
     const map = new Map<string, FlowVector>();
-    for (const v of this.flowVectorsService.vectors()) {
+    for (const v of this.flowVectorsService.vectorsIncludingBreak()) {
       map.set(v.id, v);
     }
     return map;

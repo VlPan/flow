@@ -14,6 +14,7 @@ export interface SessionCompleteDialogData {
   vectorName: string;
   vectorIcon: string;
   isEdit?: boolean;
+  isBreak?: boolean;
 }
 
 export interface SessionCompleteDialogResult {

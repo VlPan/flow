@@ -2,6 +2,7 @@ import { Injectable, OnDestroy, computed, inject, signal } from '@angular/core';
 import { v4 as uuidv4 } from 'uuid';
 import { ActiveSession, SessionRecord } from '../../models/session.model';
 import { PlanningRow } from '../../models/planning-row.model';
+import { BREAK_VECTOR_ID } from '../../models/flow-vector.model';
 import { LocalStorageService } from '../local-storage/local-storage.service';
 import { SessionSettingsService } from '../session-settings/session-settings.service';
 import { toLocalDateString } from '../../utils/date.utils';
@@ -111,6 +112,28 @@ export class SessionService implements OnDestroy {
     this._activeSession.set(null);
     this.stopTicking();
     this.syncSession();
+    this.syncRecords();
+  }
+
+  completeBreak(
+    startedAt: string,
+    finishedAt: string,
+    sessionMinutes: number,
+    flowScore: number,
+    shortDescription: string
+  ): void {
+    const record: SessionRecord = {
+      id: uuidv4(),
+      planningRowId: '',
+      flowVectorId: BREAK_VECTOR_ID,
+      shortDescription,
+      sessionMinutes,
+      flowScore,
+      startedAt,
+      finishedAt,
+      startDate: toLocalDateString(new Date(startedAt)),
+    };
+    this._records.update(all => [...all, record]);
     this.syncRecords();
   }
 

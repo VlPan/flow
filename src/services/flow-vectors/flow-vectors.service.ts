@@ -1,6 +1,6 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
 import { v4 as uuidv4 } from 'uuid';
-import { FlowVector, Destination, CompletionCriteria, DEFAULT_VECTOR_COLOR, DEFAULT_VECTOR_ICON } from '../../models/flow-vector.model';
+import { FlowVector, Destination, CompletionCriteria, DEFAULT_VECTOR_COLOR, DEFAULT_VECTOR_ICON, BREAK_VECTOR } from '../../models/flow-vector.model';
 import { LocalStorageService } from '../local-storage/local-storage.service';
 
 @Injectable({ providedIn: 'root' })
@@ -9,6 +9,7 @@ export class FlowVectorsService {
   private readonly _vectors = signal<FlowVector[]>(this.storage.get('flowVectors') ?? []);
 
   readonly vectors = computed(() => this._vectors().filter(v => !v.deleted));
+  readonly vectorsIncludingBreak = computed(() => [BREAK_VECTOR, ...this._vectors().filter(v => !v.deleted)]);
 
   create(data: Omit<FlowVector, 'id' | 'deleted'>): void {
     const vectorId = uuidv4();

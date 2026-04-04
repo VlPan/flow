@@ -1,4 +1,4 @@
-<h2 mat-dialog-title>{{ data.isEdit ? 'Edit Session' : 'Complete Session' }}</h2>
+<h2 mat-dialog-title>{{ data.isBreak ? 'Score your break' : (data.isEdit ? 'Edit Session' : 'Complete Session') }}</h2>
 
 <mat-dialog-content>
   <form [formGroup]="form" class="dialog-form">
@@ -39,6 +39,6 @@
 <mat-dialog-actions align="end">
   <button mat-button (click)="cancel()">Cancel</button>
   <button mat-flat-button (click)="save()" [disabled]="form.invalid">
-    {{ data.isEdit ? 'Save' : 'Complete' }}
+    {{ data.isBreak ? 'Log Break' : (data.isEdit ? 'Save' : 'Complete') }}
   </button>
 </mat-dialog-actions>

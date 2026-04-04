@@ -33,3 +33,14 @@ export const flowVectorsSchema = z.array(flowVectorSchema);
 export type CompletionCriteria = z.infer<typeof completionCriteriaSchema>;
 export type Destination = z.infer<typeof destinationSchema>;
 export type FlowVector = z.infer<typeof flowVectorSchema>;
+
+export const BREAK_VECTOR_ID = 'break';
+export const BREAK_VECTOR: FlowVector = {
+  id: BREAK_VECTOR_ID,
+  name: 'Flow Break',
+  color: '#87CEEB',
+  icon: '😎',
+  destinations: [],
+  finalDestinations: [],
+  deleted: false,
+};
