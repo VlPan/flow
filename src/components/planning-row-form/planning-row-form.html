@@ -1,0 +1,30 @@
+<h2 mat-dialog-title>{{ isEditMode ? 'Edit Plan' : 'Add Plan' }}</h2>
+
+<mat-dialog-content>
+  <form [formGroup]="form">
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Flow Vector</mat-label>
+      <mat-select formControlName="flowVectorId">
+        @for (vector of vectors(); track vector.id) {
+          <mat-option [value]="vector.id">{{ vector.icon }} {{ vector.name }}</mat-option>
+        }
+      </mat-select>
+      @if (form.get('flowVectorId')?.invalid && form.get('flowVectorId')?.touched) {
+        <mat-error>Flow vector is required</mat-error>
+      }
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Short Description (optional)</mat-label>
+      <textarea matInput formControlName="shortDescription" rows="3" maxlength="200"></textarea>
+      <mat-hint align="end">{{ form.get('shortDescription')?.value?.length ?? 0 }}/200</mat-hint>
+    </mat-form-field>
+  </form>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button (click)="cancel()">Cancel</button>
+  <button mat-flat-button (click)="save()" [disabled]="form.invalid">
+    {{ isEditMode ? 'Save' : 'Add' }}
+  </button>
+</mat-dialog-actions>

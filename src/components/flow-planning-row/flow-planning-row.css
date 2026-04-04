@@ -1,0 +1,41 @@
+:host {
+  display: block;
+}
+
+.row-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 4px 12px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--mat-sys-outline-variant);
+  border-left-width: 4px;
+  background: var(--mat-sys-surface);
+  overflow: hidden;
+}
+
+.vector-icon {
+  font-size: 20px;
+  flex-shrink: 0;
+}
+
+.row-text {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font: var(--mat-sys-body-large);
+}
+
+.vector-name {
+  font-weight: 500;
+}
+
+.description {
+  color: var(--mat-sys-on-surface-variant);
+}
+
+.menu-btn {
+  flex-shrink: 0;
+}

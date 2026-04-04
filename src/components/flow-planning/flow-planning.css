@@ -1,0 +1,31 @@
+.planning-content {
+  padding: 16px;
+}
+
+.day-label {
+  font: var(--mat-sys-title-medium);
+  margin: 0 0 16px;
+}
+
+.rows-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.placeholder {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 16px;
+  border: 2px dashed var(--mat-sys-outline-variant);
+  border-radius: 8px;
+  cursor: pointer;
+  color: var(--mat-sys-on-surface-variant);
+  font: var(--mat-sys-body-large);
+  transition: background-color 150ms ease;
+}
+
+.placeholder:hover {
+  background-color: var(--mat-sys-surface-variant);
+}

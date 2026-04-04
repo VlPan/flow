@@ -1,0 +1,26 @@
+<div class="row-card" [style.border-left-color]="vector().color">
+  <span class="vector-icon">{{ vector().icon }}</span>
+  <div class="row-text">
+    <span class="vector-name" [style.color]="vector().color">{{ vector().name }}</span>
+    @if (row().shortDescription) {
+      <span class="description"> - {{ row().shortDescription }}</span>
+    }
+  </div>
+  <button mat-icon-button [matMenuTriggerFor]="menu" class="menu-btn">
+    <mat-icon>more_vert</mat-icon>
+  </button>
+  <mat-menu #menu="matMenu">
+    <button mat-menu-item disabled>
+      <mat-icon>play_arrow</mat-icon>
+      <span>Start</span>
+    </button>
+    <button mat-menu-item (click)="editRequested.emit()">
+      <mat-icon>edit</mat-icon>
+      <span>Edit</span>
+    </button>
+    <button mat-menu-item (click)="deleteRequested.emit()">
+      <mat-icon>delete</mat-icon>
+      <span>Delete</span>
+    </button>
+  </mat-menu>
+</div>
