@@ -3,11 +3,13 @@ import { v4 as uuidv4 } from 'uuid';
 import { ActiveSession, SessionRecord } from '../../models/session.model';
 import { PlanningRow } from '../../models/planning-row.model';
 import { LocalStorageService } from '../local-storage/local-storage.service';
+import { SessionSettingsService } from '../session-settings/session-settings.service';
 import { toLocalDateString } from '../../utils/date.utils';
 
 @Injectable({ providedIn: 'root' })
 export class SessionService implements OnDestroy {
   private readonly storage = inject(LocalStorageService);
+  private readonly sessionSettings = inject(SessionSettingsService);
 
   private readonly _activeSession = signal<ActiveSession | null>(
     this.storage.get('activeSession') ?? null
@@ -40,7 +42,7 @@ export class SessionService implements OnDestroy {
   readonly elapsedMinutes = computed(() => Math.floor(this.elapsedMs() / 60000));
 
   readonly fillPercent = computed(() =>
-    Math.min((this.elapsedMs() / (90 * 60 * 1000)) * 100, 100)
+    Math.min((this.elapsedMs() / (this.sessionSettings.goodSessionMinutes() * 60 * 1000)) * 100, 100)
   );
 
   readonly isPaused = computed(() => !!this._activeSession()?.pausedAt);

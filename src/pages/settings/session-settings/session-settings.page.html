@@ -1,4 +1,31 @@
 <div class="subpage">
   <h2 class="subpage-title">Session Settings</h2>
   <p class="subpage-description">Configure your flow session behaviour</p>
+
+  <div class="settings-list">
+    <div class="setting-row">
+      <div class="setting-info">
+        <span class="setting-label">Hide passed time</span>
+        <span class="setting-hint">Masks the elapsed timer in the active session banner</span>
+      </div>
+      <mat-slide-toggle
+        [checked]="settingsService.hidePassedTime()"
+        (change)="settingsService.setHidePassedTime($event.checked)"
+      />
+    </div>
+
+    <div class="setting-row">
+      <div class="setting-info">
+        <span class="setting-label">Good session duration</span>
+        <span class="setting-hint">Sessions reaching this length fill the progress bar and show in green ({{ settingsService.goodSessionMinutes() }} min)</span>
+      </div>
+      <mat-slider min="15" max="240" step="15" [discrete]="true">
+        <input
+          matSliderThumb
+          [value]="settingsService.goodSessionMinutes()"
+          (valueChange)="settingsService.setGoodSessionMinutes($event)"
+        />
+      </mat-slider>
+    </div>
+  </div>
 </div>

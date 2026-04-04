@@ -16,6 +16,7 @@ import {
 import { PlanningRowService } from '../../services/planning-row/planning-row.service';
 import { FlowVectorsService } from '../../services/flow-vectors/flow-vectors.service';
 import { SessionService } from '../../services/session/session.service';
+import { SessionSettingsService } from '../../services/session-settings/session-settings.service';
 import { PlanningRow } from '../../models/planning-row.model';
 import { FlowVector } from '../../models/flow-vector.model';
 import { toLocalDateString } from '../../utils/date.utils';
@@ -30,6 +31,7 @@ import { toLocalDateString } from '../../utils/date.utils';
 export class FlowPlanning {
   protected readonly dateService = inject(DateService);
   protected readonly sessionService = inject(SessionService);
+  protected readonly sessionSettings = inject(SessionSettingsService);
   private readonly planningRowService = inject(PlanningRowService);
   private readonly flowVectorsService = inject(FlowVectorsService);
   private readonly dialog = inject(MatDialog);

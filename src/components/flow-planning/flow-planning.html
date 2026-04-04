@@ -35,7 +35,7 @@
     <span class="banner-icon">{{ activeBannerVector()?.icon }}</span>
     <div class="banner-text">
       <span class="banner-name">{{ activeBannerVector()?.name }}</span>
-      <span class="banner-time">{{ formattedElapsed() }}</span>
+      <span class="banner-time">{{ sessionSettings.hidePassedTime() ? '--:--' : formattedElapsed() }}</span>
     </div>
     <div class="banner-actions">
       @if (sessionService.isPaused()) {

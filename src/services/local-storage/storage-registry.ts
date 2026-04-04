@@ -12,6 +12,8 @@ export const STORAGE_REGISTRY = {
   planningRows: planningRowsSchema,
   activeSession: activeSessionSchema.nullable(),
   sessionRecords: sessionRecordsSchema,
+  sessionHidePassedTime: z.boolean(),
+  sessionGoodMinutes: z.number(),
 } satisfies Record<string, ZodType>;
 
 export type StorageRegistry = typeof STORAGE_REGISTRY;
