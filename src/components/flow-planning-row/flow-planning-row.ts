@@ -15,7 +15,15 @@ import { FlowVector } from '../../models/flow-vector.model';
 export class FlowPlanningRow {
   readonly row = input.required<PlanningRow>();
   readonly vector = input.required<FlowVector>();
+  readonly isActive = input<boolean>(false);
+  readonly isAnySessionActive = input<boolean>(false);
+  readonly fillPercent = input<number>(0);
+  readonly isPaused = input<boolean>(false);
 
+  readonly startRequested = output<void>();
+  readonly pauseRequested = output<void>();
+  readonly resumeRequested = output<void>();
+  readonly completeRequested = output<void>();
   readonly editRequested = output<void>();
   readonly deleteRequested = output<void>();
 }

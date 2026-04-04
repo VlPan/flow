@@ -1,10 +1,11 @@
-import { Component, inject } from '@angular/core';
+import { Component, computed, inject } from '@angular/core';
 import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { MatListModule } from '@angular/material/list';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { trigger, state, style, transition, animate } from '@angular/animations';
 import { UiService } from '../../services/ui/ui.service';
+import { SessionService } from '../../services/session/session.service';
 
 interface NavItem {
   label: string;
@@ -35,6 +36,9 @@ interface NavItem {
 })
 export class Shell {
   protected readonly ui = inject(UiService);
+  private readonly sessionService = inject(SessionService);
+
+  protected readonly hasActiveSession = computed(() => !!this.sessionService.activeSession());
 
   protected readonly navItems: NavItem[] = [
     { label: 'Flow', route: '/flow', icon: 'hourglass_empty' },

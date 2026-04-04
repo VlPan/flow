@@ -13,7 +13,12 @@
     <mat-nav-list>
       @for (item of navItems; track item.route) {
         <a mat-list-item [routerLink]="item.route" routerLinkActive="active-link">
-          <mat-icon matListItemIcon>{{ item.icon }}</mat-icon>
+          <span matListItemIcon class="nav-icon-wrap">
+            <mat-icon>{{ item.icon }}</mat-icon>
+            @if (hasActiveSession() && item.route === '/flow') {
+              <span class="session-dot"></span>
+            }
+          </span>
           <span matListItemTitle class="nav-label">{{ item.label }}</span>
         </a>
       }

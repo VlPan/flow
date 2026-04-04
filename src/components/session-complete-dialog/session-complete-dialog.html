@@ -1,0 +1,44 @@
+<h2 mat-dialog-title>{{ data.isEdit ? 'Edit Session' : 'Complete Session' }}</h2>
+
+<mat-dialog-content>
+  <form [formGroup]="form" class="dialog-form">
+
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Flow Vector</mat-label>
+      <input matInput [value]="data.vectorIcon + ' ' + data.vectorName" readonly />
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Description (optional)</mat-label>
+      <textarea matInput formControlName="shortDescription" rows="2" maxlength="200"></textarea>
+      <mat-hint align="end">{{ form.get('shortDescription')?.value?.length ?? 0 }}/200</mat-hint>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Session Duration (minutes)</mat-label>
+      <input matInput type="number" formControlName="sessionMinutes" min="1" />
+      @if (form.get('sessionMinutes')?.invalid && form.get('sessionMinutes')?.touched) {
+        <mat-error>Minimum 1 minute</mat-error>
+      }
+    </mat-form-field>
+
+    <div class="score-field">
+      <label class="score-label">Flow Score: <strong>{{ form.get('flowScore')?.value }}</strong></label>
+      <mat-slider min="1" max="10" step="1" class="full-width">
+        <input matSliderThumb formControlName="flowScore" />
+      </mat-slider>
+      <div class="score-range-labels">
+        <span>1</span>
+        <span>10</span>
+      </div>
+    </div>
+
+  </form>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button (click)="cancel()">Cancel</button>
+  <button mat-flat-button (click)="save()" [disabled]="form.invalid">
+    {{ data.isEdit ? 'Save' : 'Complete' }}
+  </button>
+</mat-dialog-actions>

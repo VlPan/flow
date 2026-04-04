@@ -3,6 +3,7 @@
 }
 
 .row-card {
+  position: relative;
   display: flex;
   align-items: center;
   gap: 12px;
@@ -12,6 +13,54 @@
   border-left-width: 4px;
   background: var(--mat-sys-surface);
   overflow: hidden;
+}
+
+/* Background fill for active session */
+.fill-bar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  background: rgba(76, 175, 80, 0.18);
+  transition: width 1s linear;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Shimmer animation for active (non-paused) row */
+@keyframes shimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(400%); }
+}
+
+.row-card.active:not(.paused)::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 40%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(76, 200, 100, 0.25) 50%,
+    transparent 100%
+  );
+  animation: shimmer 1.8s ease-in-out infinite;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.row-card.paused {
+  opacity: 0.72;
+}
+
+/* Ensure content sits above the fill-bar */
+.vector-icon,
+.row-text,
+.menu-btn {
+  position: relative;
+  z-index: 1;
 }
 
 .vector-icon {

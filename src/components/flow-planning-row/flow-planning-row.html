@@ -1,4 +1,13 @@
-<div class="row-card" [style.border-left-color]="vector().color">
+<div
+  class="row-card"
+  [class.active]="isActive()"
+  [class.paused]="isPaused()"
+  [style.border-left-color]="vector().color"
+>
+  @if (isActive()) {
+    <div class="fill-bar" [style.width.%]="fillPercent()"></div>
+  }
+
   <span class="vector-icon">{{ vector().icon }}</span>
   <div class="row-text">
     <span class="vector-name" [style.color]="vector().color">{{ vector().name }}</span>
@@ -10,17 +19,35 @@
     <mat-icon>more_vert</mat-icon>
   </button>
   <mat-menu #menu="matMenu">
-    <button mat-menu-item disabled>
-      <mat-icon>play_arrow</mat-icon>
-      <span>Start</span>
-    </button>
-    <button mat-menu-item (click)="editRequested.emit()">
-      <mat-icon>edit</mat-icon>
-      <span>Edit</span>
-    </button>
-    <button mat-menu-item (click)="deleteRequested.emit()">
-      <mat-icon>delete</mat-icon>
-      <span>Delete</span>
-    </button>
+    @if (isActive()) {
+      <button mat-menu-item (click)="completeRequested.emit()">
+        <mat-icon>check_circle</mat-icon>
+        <span>Complete</span>
+      </button>
+      @if (isPaused()) {
+        <button mat-menu-item (click)="resumeRequested.emit()">
+          <mat-icon>play_arrow</mat-icon>
+          <span>Resume</span>
+        </button>
+      } @else {
+        <button mat-menu-item (click)="pauseRequested.emit()">
+          <mat-icon>pause</mat-icon>
+          <span>Pause</span>
+        </button>
+      }
+    } @else {
+      <button mat-menu-item [disabled]="isAnySessionActive()" (click)="startRequested.emit()">
+        <mat-icon>play_arrow</mat-icon>
+        <span>Start</span>
+      </button>
+      <button mat-menu-item [disabled]="isAnySessionActive()" (click)="editRequested.emit()">
+        <mat-icon>edit</mat-icon>
+        <span>Edit</span>
+      </button>
+      <button mat-menu-item [disabled]="isAnySessionActive()" (click)="deleteRequested.emit()">
+        <mat-icon>delete</mat-icon>
+        <span>Delete</span>
+      </button>
+    }
   </mat-menu>
 </div>

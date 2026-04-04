@@ -11,8 +11,8 @@
 
 .shell-content {
   flex: 1;
-  overflow: auto;
-  padding: 16px;
+  overflow: hidden;
+  min-width: 0;
 }
 
 .toggle-btn {
@@ -41,4 +41,29 @@
   background-color: var(--mat-sys-secondary-container);
   color: var(--mat-sys-on-secondary-container);
   border-radius: 0 !important;
+}
+
+/* Session running indicator on nav icon */
+.nav-icon-wrap {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.session-dot {
+  position: absolute;
+  top: -3px;
+  right: -3px;
+  width: 8px;
+  height: 8px;
+  background: #4caf50;
+  border-radius: 50%;
+  border: 1.5px solid var(--mat-sys-surface);
+  animation: session-pulse 1.8s ease-in-out infinite;
+}
+
+@keyframes session-pulse {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.35); opacity: 0.65; }
 }

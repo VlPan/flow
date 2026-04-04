@@ -1,21 +1,53 @@
-<app-weekly-date-picker />
+<div class="padding-container">
+  <app-weekly-date-picker />
 
-<div class="planning-content">
-  <h3 class="day-label">{{ dateService.selectedDay() | date: 'EEEE, MMMM d' }}</h3>
+  <div class="planning-content">
+    <h3 class="day-label">{{ dateService.selectedDay() | date: 'EEEE, MMMM d' }}</h3>
 
-  <div class="rows-list">
-    @for (row of todayRows(); track row.id) {
-      <app-flow-planning-row
-        [row]="row"
-        [vector]="vectorFor(row)"
-        (editRequested)="onEdit(row)"
-        (deleteRequested)="onDelete(row)"
-      />
-    }
+    <div class="rows-list">
+      @for (row of todayRows(); track row.id) {
+        <app-flow-planning-row
+          [row]="row"
+          [vector]="vectorFor(row)"
+          [isActive]="isRowActive(row)"
+          [isAnySessionActive]="sessionService.activeSession() !== null"
+          [fillPercent]="isRowActive(row) ? sessionService.fillPercent() : 0"
+          [isPaused]="sessionService.isPaused()"
+          (startRequested)="onStart(row)"
+          (pauseRequested)="sessionService.pause()"
+          (resumeRequested)="sessionService.resume()"
+          (completeRequested)="openCompleteDialog()"
+          (editRequested)="onEdit(row)"
+          (deleteRequested)="onDelete(row)"
+        />
+      }
 
-    <div class="placeholder" (click)="openAddDialog()">
-      <mat-icon>add</mat-icon>
-      <span>Add plan</span>
+      <div class="placeholder" (click)="openAddDialog()">
+        <mat-icon>add</mat-icon>
+        <span>Add plan</span>
+      </div>
     </div>
   </div>
 </div>
+
+@if (sessionService.activeSession()) {
+  <div class="active-banner" [class.paused]="sessionService.isPaused()">
+    <span class="banner-icon">{{ activeBannerVector()?.icon }}</span>
+    <div class="banner-text">
+      <span class="banner-name">{{ activeBannerVector()?.name }}</span>
+      <span class="banner-time">{{ formattedElapsed() }}</span>
+    </div>
+    <div class="banner-actions">
+      @if (sessionService.isPaused()) {
+        <button mat-icon-button (click)="sessionService.resume()" title="Resume">
+          <mat-icon>play_arrow</mat-icon>
+        </button>
+      } @else {
+        <button mat-icon-button (click)="sessionService.pause()" title="Pause">
+          <mat-icon>pause</mat-icon>
+        </button>
+      }
+      <button mat-flat-button (click)="openCompleteDialog()">Complete</button>
+    </div>
+  </div>
+}

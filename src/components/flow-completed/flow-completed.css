@@ -1,3 +1,21 @@
 .content {
   padding: 16px;
 }
+
+.section-label {
+  font: var(--mat-sys-title-medium);
+  margin: 0 0 16px;
+}
+
+.records-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.empty-state {
+  padding: 24px 16px;
+  text-align: center;
+  color: var(--mat-sys-on-surface-variant);
+  font: var(--mat-sys-body-medium);
+}

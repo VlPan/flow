@@ -1,0 +1,30 @@
+.dialog-form {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding-top: 8px;
+}
+
+.full-width {
+  width: 100%;
+}
+
+.score-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 8px 0 4px;
+}
+
+.score-label {
+  font: var(--mat-sys-body-medium);
+  color: var(--mat-sys-on-surface-variant);
+}
+
+.score-range-labels {
+  display: flex;
+  justify-content: space-between;
+  font: var(--mat-sys-body-small);
+  color: var(--mat-sys-on-surface-variant);
+  padding: 0 12px;
+}

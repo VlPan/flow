@@ -1,0 +1,30 @@
+<div
+  class="row-card"
+  [style.border-left-color]="borderColor()"
+  [style.background]="bgColor()"
+>
+  <span class="vector-icon">{{ vector().icon }}</span>
+  <div class="row-text">
+    <span class="vector-name" [style.color]="vector().color">{{ vector().name }}</span>
+    @if (record().shortDescription) {
+      <span class="description"> - {{ record().shortDescription }}</span>
+    }
+  </div>
+  <div class="meta">
+    <span class="time-badge">{{ formattedTime() }}</span>
+    <span class="score-badge" [style.color]="borderColor()">{{ record().flowScore }}/10</span>
+  </div>
+  <button mat-icon-button [matMenuTriggerFor]="menu" class="menu-btn">
+    <mat-icon>more_vert</mat-icon>
+  </button>
+  <mat-menu #menu="matMenu">
+    <button mat-menu-item (click)="editRequested.emit()">
+      <mat-icon>edit</mat-icon>
+      <span>Edit</span>
+    </button>
+    <button mat-menu-item (click)="deleteRequested.emit()">
+      <mat-icon>delete</mat-icon>
+      <span>Delete</span>
+    </button>
+  </mat-menu>
+</div>
