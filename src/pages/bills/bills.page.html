@@ -1,0 +1,68 @@
+<div class="bills-page">
+  <div class="page-header">
+    <h1 class="page-title">Bills</h1>
+    <button mat-flat-button (click)="addBill()">
+      <mat-icon>add</mat-icon>
+      Add Bill
+    </button>
+  </div>
+
+  <p class="current-balance">
+    Current Balance: {{ balanceService.currencyBalance() | number: '1.2-2' }} {{ settings.currencySymbol() }}
+  </p>
+
+  @if (billsService.bills().length === 0) {
+    <p class="empty-state">No bills yet. Add one to get started.</p>
+  } @else {
+    <mat-table [dataSource]="billsService.bills()" class="bills-table">
+
+      <ng-container matColumnDef="name">
+        <mat-header-cell *matHeaderCellDef>Name</mat-header-cell>
+        <mat-cell *matCellDef="let bill">
+          @if (bill.emoji) {
+            <span class="bill-emoji">{{ bill.emoji }}</span>
+          }
+          <span class="bill-name">{{ bill.name }}</span>
+        </mat-cell>
+      </ng-container>
+
+      <ng-container matColumnDef="cost">
+        <mat-header-cell *matHeaderCellDef>Cost ({{ settings.currencySymbol() }})</mat-header-cell>
+        <mat-cell *matCellDef="let bill">
+          {{ bill.cost !== null ? (bill.cost | number: '1.2-2') : 'Unfixed' }}
+        </mat-cell>
+      </ng-container>
+
+      <ng-container matColumnDef="necessity">
+        <mat-header-cell *matHeaderCellDef>Basic Necessity</mat-header-cell>
+        <mat-cell *matCellDef="let bill">
+          <mat-checkbox [checked]="bill.isBasicNecessity" [disabled]="true" />
+        </mat-cell>
+      </ng-container>
+
+      <ng-container matColumnDef="lastCovered">
+        <mat-header-cell *matHeaderCellDef>Last Covered</mat-header-cell>
+        <mat-cell *matCellDef="let bill">{{ lastCoveredLabel(bill) }}</mat-cell>
+      </ng-container>
+
+      <ng-container matColumnDef="actions">
+        <mat-header-cell *matHeaderCellDef>Actions</mat-header-cell>
+        <mat-cell *matCellDef="let bill" class="actions-cell">
+          <button mat-icon-button class="cover-btn" (click)="coverBill(bill)" title="Cover bill">
+            <mat-icon>check_circle</mat-icon>
+          </button>
+          <button mat-icon-button (click)="editBill(bill)" title="Edit bill">
+            <mat-icon>edit</mat-icon>
+          </button>
+          <button mat-icon-button class="delete-btn" (click)="deleteBill(bill)" title="Delete bill">
+            <mat-icon>delete</mat-icon>
+          </button>
+        </mat-cell>
+      </ng-container>
+
+      <mat-header-row *matHeaderRowDef="displayedColumns" />
+      <mat-row *matRowDef="let row; columns: displayedColumns" />
+
+    </mat-table>
+  }
+</div>

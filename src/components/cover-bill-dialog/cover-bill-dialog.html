@@ -1,0 +1,43 @@
+<h2 mat-dialog-title>Cover Bill</h2>
+
+<mat-dialog-content>
+  @if (isFixed) {
+    <p class="confirm-message">
+      Are you sure you want to cover "{{ billDisplayName() }}"
+      @if (bill.isBasicNecessity && deduction() !== rawAmount()) {
+        for {{ deduction() | number: '1.2-2' }} {{ settings.currencySymbol() }}?
+        (Original: {{ rawAmount() | number: '1.2-2' }} {{ settings.currencySymbol() }})
+      } @else {
+        for {{ deduction() | number: '1.2-2' }} {{ settings.currencySymbol() }}?
+      }
+    </p>
+  } @else {
+    <p class="confirm-message">
+      Enter the amount you are paying for "{{ billDisplayName() }}".
+    </p>
+
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Amount ({{ settings.currencySymbol() }})</mat-label>
+      <input
+        matInput
+        type="number"
+        min="0.01"
+        step="0.01"
+        (input)="onAmountChange($any($event.target).value)"
+      />
+      @if (deduction() !== null) {
+        <mat-hint>
+          Will deduct: {{ deduction() | number: '1.2-2' }} {{ settings.currencySymbol() }}
+          @if (bill.isBasicNecessity) {
+            ({{ settings.basicSpendingDiscount() }}% of entered amount)
+          }
+        </mat-hint>
+      }
+    </mat-form-field>
+  }
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button (click)="cancel()">Cancel</button>
+  <button mat-flat-button (click)="cover()" [disabled]="deduction() === null">Cover</button>
+</mat-dialog-actions>

@@ -44,6 +44,7 @@ export class Shell {
     { label: 'Flow', route: '/flow', icon: 'hourglass_empty' },
     { label: 'Habits', route: '/habits', icon: 'repeat' },
     { label: 'Balance', route: '/balance', icon: 'balance' },
+    { label: 'Bills', route: '/bills', icon: 'receipt_long' },
     { label: 'Statistics', route: '/statistics', icon: 'bar_chart' },
     { label: 'Settings', route: '/settings', icon: 'settings' },
   ];

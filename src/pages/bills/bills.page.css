@@ -1,0 +1,61 @@
+.bills-page {
+  padding: 24px;
+  max-width: 900px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.page-title {
+  font: var(--mat-sys-headline-medium);
+  margin: 0;
+}
+
+.current-balance {
+  font: var(--mat-sys-body-large);
+  color: var(--mat-sys-on-surface-variant);
+  margin: 0;
+}
+
+.empty-state {
+  font: var(--mat-sys-body-medium);
+  color: var(--mat-sys-on-surface-variant);
+  text-align: center;
+  padding: 48px 0;
+}
+
+.bills-table {
+  width: 100%;
+  border: 1px solid var(--mat-sys-outline-variant);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.bill-emoji {
+  font-size: 20px;
+  margin-right: 8px;
+  flex-shrink: 0;
+}
+
+.bill-name {
+  font-weight: 500;
+}
+
+.actions-cell {
+  white-space: nowrap;
+}
+
+.cover-btn {
+  color: var(--mat-sys-tertiary) !important;
+}
+
+.delete-btn {
+  color: var(--mat-sys-error) !important;
+}
