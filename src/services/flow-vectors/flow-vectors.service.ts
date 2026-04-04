@@ -10,6 +10,7 @@ export class FlowVectorsService {
 
   readonly vectors = computed(() => this._vectors().filter(v => !v.deleted));
   readonly vectorsIncludingBreak = computed(() => [BREAK_VECTOR, ...this._vectors().filter(v => !v.deleted)]);
+  readonly allVectorsIncludingDeleted = computed(() => [BREAK_VECTOR, ...this._vectors()]);
 
   create(data: Omit<FlowVector, 'id' | 'deleted'>): void {
     const vectorId = uuidv4();

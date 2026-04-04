@@ -1,0 +1,56 @@
+[
+  {
+    "id": "vec-career",
+    "name": "Career",
+    "color": "#2196F3",
+    "icon": "💼",
+    "destinations": [],
+    "finalDestinations": [],
+    "deleted": false
+  },
+  {
+    "id": "vec-health",
+    "name": "Health",
+    "color": "#4CAF50",
+    "icon": "🏃",
+    "destinations": [],
+    "finalDestinations": [],
+    "deleted": false
+  },
+  {
+    "id": "vec-learning",
+    "name": "Learning",
+    "color": "#FF9800",
+    "icon": "📚",
+    "destinations": [],
+    "finalDestinations": [],
+    "deleted": false
+  },
+  {
+    "id": "vec-creative",
+    "name": "Creative",
+    "color": "#E91E63",
+    "icon": "🎨",
+    "destinations": [],
+    "finalDestinations": [],
+    "deleted": false
+  },
+  {
+    "id": "vec-relationships",
+    "name": "Relationships",
+    "color": "#9C27B0",
+    "icon": "❤️",
+    "destinations": [],
+    "finalDestinations": [],
+    "deleted": true
+  },
+  {
+    "id": "vec-finance",
+    "name": "Finance",
+    "color": "#FF5722",
+    "icon": "💰",
+    "destinations": [],
+    "finalDestinations": [],
+    "deleted": true
+  }
+]

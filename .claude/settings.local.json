@@ -8,7 +8,8 @@
       "Bash(xargs grep:*)",
       "WebSearch",
       "Bash(npm install:*)",
-      "Skill(codemie:codemie-commit)"
+      "Skill(codemie:codemie-commit)",
+      "Bash(node generate-test-data.js)"
     ]
   }
 }

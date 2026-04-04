@@ -1,1 +1,40 @@
-<h1>Statistics</h1>
+<div class="p-6 flex flex-col gap-6 h-full overflow-y-auto">
+
+  <!-- Header + range selector -->
+  <div class="flex items-center justify-between flex-wrap gap-3">
+    <h1 class="text-2xl font-semibold">Statistics</h1>
+    <mat-button-toggle-group
+      [value]="stats.selectedRange()"
+      (change)="setRange($event.value)"
+      hideSingleSelectionIndicator
+    >
+      <mat-button-toggle value="7d">7 days</mat-button-toggle>
+      <mat-button-toggle value="30d">30 days</mat-button-toggle>
+      <mat-button-toggle value="100d">100 days</mat-button-toggle>
+      <mat-button-toggle value="all">All time</mat-button-toggle>
+    </mat-button-toggle-group>
+  </div>
+
+  <!-- Points chart -->
+  <div class="flex flex-col gap-2">
+    <h2 class="text-sm font-medium text-gray-500 uppercase tracking-wide">Points per day</h2>
+    <div
+      echarts
+      [options]="stats.ptsChartOptions()"
+      class="w-full"
+      style="height: 300px;"
+    ></div>
+  </div>
+
+  <!-- Focused time chart -->
+  <div class="flex flex-col gap-2">
+    <h2 class="text-sm font-medium text-gray-500 uppercase tracking-wide">Focused time per day</h2>
+    <div
+      echarts
+      [options]="stats.timeChartOptions()"
+      class="w-full"
+      style="height: 350px;"
+    ></div>
+  </div>
+
+</div>
