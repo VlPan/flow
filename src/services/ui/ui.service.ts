@@ -9,9 +9,18 @@ export class UiService {
     this.storage.get('sidenavExpanded') ?? true
   );
 
+  readonly flowSplitSizes = signal<[number, number]>(
+    this.storage.get('flowSplitSizes') ?? [70, 30]
+  );
+
   toggleSidenav(): void {
     const next = !this.isSidenavExpanded();
     this.isSidenavExpanded.set(next);
     this.storage.set('sidenavExpanded', next);
+  }
+
+  setFlowSplitSizes(sizes: [number, number]): void {
+    this.flowSplitSizes.set(sizes);
+    this.storage.set('flowSplitSizes', sizes);
   }
 }

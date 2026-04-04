@@ -1,14 +1,19 @@
 import { Component, inject } from '@angular/core';
-import { DatePipe } from '@angular/common';
-import { DateService } from '../../services/date/date.service';
-import { WeeklyDatePicker } from '../../components/weekly-date-picker/weekly-date-picker';
+import { AngularSplitModule, SplitGutterInteractionEvent } from 'angular-split';
+import { UiService } from '../../services/ui/ui.service';
+import { FlowPlanning } from '../../components/flow-planning/flow-planning';
+import { FlowCompleted } from '../../components/flow-completed/flow-completed';
 
 @Component({
   selector: 'app-flow-page',
   standalone: true,
-  imports: [DatePipe, WeeklyDatePicker],
+  imports: [AngularSplitModule, FlowPlanning, FlowCompleted],
   templateUrl: './flow.page.html',
 })
 export class FlowPage {
-  protected readonly dateService = inject(DateService);
+  protected readonly uiService = inject(UiService);
+
+  protected onDragEnd(event: SplitGutterInteractionEvent): void {
+    this.uiService.setFlowSplitSizes(event.sizes as [number, number]);
+  }
 }

@@ -6,6 +6,7 @@ import { flowVectorsSchema } from '../../models/flow-vector.model';
 export const STORAGE_REGISTRY = {
   sidenavExpanded: z.boolean(),
   flowVectors: flowVectorsSchema,
+  flowSplitSizes: z.tuple([z.number(), z.number()]),
 } satisfies Record<string, ZodType>;
 
 export type StorageRegistry = typeof STORAGE_REGISTRY;

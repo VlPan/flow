@@ -5,7 +5,10 @@
       "Bash(npx ng:*)",
       "Bash(npx vitest:*)",
       "Bash(npm run:*)",
-      "Bash(xargs grep:*)"
+      "Bash(xargs grep:*)",
+      "WebSearch",
+      "Bash(npm install:*)",
+      "Skill(codemie:codemie-commit)"
     ]
   }
 }
