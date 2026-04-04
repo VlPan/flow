@@ -1,0 +1,23 @@
+.subpage {
+  padding: 24px;
+  height: 100%;
+  overflow-y: auto;
+  box-sizing: border-box;
+}
+
+.subpage-title {
+  font: var(--mat-sys-title-large);
+  margin: 0 0 4px;
+}
+
+.subpage-description {
+  font: var(--mat-sys-body-medium);
+  color: var(--mat-sys-on-surface-variant);
+  margin: 0 0 24px;
+}
+
+.vectors-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(390px, 1fr));
+  gap: 16px;
+}

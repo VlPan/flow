@@ -11,7 +11,15 @@ export const routes: Routes = [
       { path: 'habits', loadComponent: () => import('../pages/habits/habits.page').then(m => m.HabitsPage) },
       { path: 'balance', loadComponent: () => import('../pages/balance/balance.page').then(m => m.BalancePage) },
       { path: 'statistics', loadComponent: () => import('../pages/statistics/statistics.page').then(m => m.StatisticsPage) },
-      { path: 'settings', loadComponent: () => import('../pages/settings/settings.page').then(m => m.SettingsPage) },
+      {
+        path: 'settings',
+        loadComponent: () => import('../pages/settings/settings.page').then(m => m.SettingsPage),
+        children: [
+          { path: '', redirectTo: 'flow-vectors', pathMatch: 'full' },
+          { path: 'flow-vectors', loadComponent: () => import('../pages/settings/flow-vectors/flow-vectors-settings.page').then(m => m.FlowVectorsSettingsPage) },
+          { path: 'session-settings', loadComponent: () => import('../pages/settings/session-settings/session-settings.page').then(m => m.SessionSettingsPage) },
+        ],
+      },
     ],
   },
 ];

@@ -1,17 +1,17 @@
-<div class="settings-page">
-  <section class="flow-vectors-section">
-    <h2 class="section-title">Flow Vectors</h2>
-    <p class="section-description">Define your areas of focus</p>
-    <div class="vectors-grid">
-      @for (vector of vectors(); track vector.id) {
-        <app-flow-vector-card
-          [vector]="vector"
-          (edit)="openEditDialog($event)"
-          (deleteRequested)="onDeleteRequested(vector)"
-          (destinationToggleRequested)="onDestinationToggleRequested(vector.id, $event)"
-          (criteriaToggleRequested)="onCriteriaToggleRequested(vector.id, $event)" />
-      }
-      <app-flow-vector-placeholder (click)="openCreateDialog()" />
-    </div>
-  </section>
+<div class="settings-layout">
+  <nav class="settings-nav">
+    <mat-nav-list>
+      <a mat-list-item routerLink="flow-vectors" routerLinkActive="active-link">
+        <mat-icon matListItemIcon>track_changes</mat-icon>
+        <span matListItemTitle>Flow Vectors</span>
+      </a>
+      <a mat-list-item routerLink="session-settings" routerLinkActive="active-link">
+        <mat-icon matListItemIcon>timer</mat-icon>
+        <span matListItemTitle>Session Settings</span>
+      </a>
+    </mat-nav-list>
+  </nav>
+  <div class="settings-content">
+    <router-outlet />
+  </div>
 </div>
