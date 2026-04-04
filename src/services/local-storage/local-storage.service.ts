@@ -12,12 +12,21 @@ export class LocalStorageService {
     const raw = localStorage.getItem(key);
     if (raw === null) return null;
 
+    let parsed: unknown;
     try {
-      const parsed = (STORAGE_REGISTRY[key] as ZodType).safeParse(JSON.parse(raw));
-      return parsed.success ? (parsed.data as StorageValue<K>) : null;
-    } catch {
+      parsed = JSON.parse(raw);
+    } catch (e) {
+      console.error(`[LocalStorage] Failed to parse JSON for key "${key}":`, e);
       return null;
     }
+
+    const result = (STORAGE_REGISTRY[key] as ZodType).safeParse(parsed);
+    if (!result.success) {
+      console.error(`[LocalStorage] Schema validation failed for key "${key}":`, result.error.issues);
+      return null;
+    }
+
+    return result.data as StorageValue<K>;
   }
 
   set<K extends StorageKey>(key: K, value: StorageValue<K>): void {

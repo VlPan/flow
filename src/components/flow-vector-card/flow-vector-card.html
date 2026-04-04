@@ -1,0 +1,114 @@
+<div class="card" [style.border-left-color]="vector().color">
+  <!-- Header -->
+  <div class="card-header">
+    <span class="vector-icon">{{ vector().icon }}</span>
+    <span class="vector-name" [matTooltip]="vector().name" matTooltipShowDelay="500">
+      {{ vector().name }}
+    </span>
+    <button mat-icon-button class="menu-btn" [matMenuTriggerFor]="menu" aria-label="Options">
+      <mat-icon>more_vert</mat-icon>
+    </button>
+    <mat-menu #menu="matMenu">
+      <button mat-menu-item (click)="onEditClick()">
+        <mat-icon>edit</mat-icon>
+        <span>Edit</span>
+      </button>
+      <button mat-menu-item (click)="onDeleteClick()">
+        <mat-icon>delete</mat-icon>
+        <span>Delete</span>
+      </button>
+    </mat-menu>
+  </div>
+
+  <!-- Content -->
+  <div class="card-content">
+
+    <!-- Destinations -->
+    @if (sortedDestinations().length > 0) {
+      <div class="section-label">Destinations</div>
+      <mat-accordion>
+        @for (dest of sortedDestinations(); track dest.id) {
+          <mat-expansion-panel class="dest-panel" [class.completed]="dest.completed">
+            <mat-expansion-panel-header>
+              <mat-panel-title class="dest-title">
+                <button
+                  mat-icon-button
+                  class="toggle-btn"
+                  [class.completed]="dest.completed"
+                  (click)="$event.stopPropagation(); onDestinationToggle(dest, false)"
+                  [attr.aria-label]="dest.completed ? 'Mark incomplete' : 'Mark complete'"
+                >
+                  <mat-icon>{{ dest.completed ? 'check_circle' : 'check_circle_outline' }}</mat-icon>
+                </button>
+                <span class="dest-name" [class.completed-text]="dest.completed">{{ dest.name }}</span>
+              </mat-panel-title>
+            </mat-expansion-panel-header>
+
+            @if (dest.completionCriteria.length > 0) {
+              <div class="criteria-list">
+                @for (criteria of dest.completionCriteria | sortByCompleted; track criteria.id) {
+                  <div class="criteria-item">
+                    <mat-checkbox
+                      [checked]="criteria.completed"
+                      (change)="onCriteriaChange($event, dest, criteria, false)"
+                    >
+                      <span [class.completed-text]="criteria.completed">{{ criteria.name }}</span>
+                    </mat-checkbox>
+                  </div>
+                }
+              </div>
+            } @else {
+              <p class="no-criteria">No completion criteria</p>
+            }
+          </mat-expansion-panel>
+        }
+      </mat-accordion>
+    }
+
+    <!-- Final Destinations -->
+    @if (sortedFinalDestinations().length > 0) {
+      <div class="section-label">Final Destinations</div>
+      <mat-accordion>
+        @for (dest of sortedFinalDestinations(); track dest.id) {
+          <mat-expansion-panel class="dest-panel" [class.completed]="dest.completed">
+            <mat-expansion-panel-header>
+              <mat-panel-title class="dest-title">
+                <button
+                  mat-icon-button
+                  class="toggle-btn"
+                  [class.completed]="dest.completed"
+                  (click)="$event.stopPropagation(); onDestinationToggle(dest, true)"
+                  [attr.aria-label]="dest.completed ? 'Mark incomplete' : 'Mark complete'"
+                >
+                  <mat-icon>{{ dest.completed ? 'check_circle' : 'check_circle_outline' }}</mat-icon>
+                </button>
+                <span class="dest-name" [class.completed-text]="dest.completed">{{ dest.name }}</span>
+              </mat-panel-title>
+            </mat-expansion-panel-header>
+
+            @if (dest.completionCriteria.length > 0) {
+              <div class="criteria-list">
+                @for (criteria of dest.completionCriteria | sortByCompleted; track criteria.id) {
+                  <div class="criteria-item">
+                    <mat-checkbox
+                      [checked]="criteria.completed"
+                      (change)="onCriteriaChange($event, dest, criteria, true)"
+                    >
+                      <span [class.completed-text]="criteria.completed">{{ criteria.name }}</span>
+                    </mat-checkbox>
+                  </div>
+                }
+              </div>
+            } @else {
+              <p class="no-criteria">No completion criteria</p>
+            }
+          </mat-expansion-panel>
+        }
+      </mat-accordion>
+    }
+
+    @if (sortedDestinations().length === 0 && sortedFinalDestinations().length === 0) {
+      <p class="empty-state">No destinations defined</p>
+    }
+  </div>
+</div>

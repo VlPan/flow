@@ -1,0 +1,102 @@
+<h2 mat-dialog-title>{{ isEditMode ? 'Edit Flow Vector' : 'Create Flow Vector' }}</h2>
+
+<mat-dialog-content>
+  <form [formGroup]="form" class="form-content">
+
+    <!-- Top row: name, icon, color -->
+    <div class="top-row">
+      <mat-form-field appearance="outline" class="name-field">
+        <mat-label>Name</mat-label>
+        <input matInput formControlName="name" placeholder="Flow vector name" />
+        @if (form.get('name')!.hasError('required') && form.get('name')!.touched) {
+          <mat-error>Name is required</mat-error>
+        }
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="icon-field">
+        <mat-label>Icon</mat-label>
+        <input matInput formControlName="icon" placeholder="Icon" maxlength="2" />
+      </mat-form-field>
+
+      <div class="color-field">
+        <label class="color-label">Color</label>
+        <button type="button" class="color-swatch" [style.background]="form.get('color')!.value"
+          (click)="$event.stopPropagation(); colorPickerOpen.set(!colorPickerOpen())">
+        </button>
+        @if (colorPickerOpen()) {
+          <div class="color-picker-dropdown">
+            <color-compact [color]="form.get('color')!.value" (onChangeComplete)="onColorChange($event)"></color-compact>
+          </div>
+        }
+      </div>
+    </div>
+
+    <!-- Shared destination list template -->
+    <ng-template #destListTpl let-arr="arr" let-addLabel="addLabel">
+      <div class="tab-content">
+        @for (destCtrl of arr.controls; track $index; let i = $index) {
+          <div class="destination-item" [formGroup]="asFormGroup(destCtrl)">
+            <div class="destination-header">
+              <mat-form-field appearance="outline" class="dest-name-field">
+                <mat-label>Destination name</mat-label>
+                <input matInput formControlName="name" />
+                @if (asFormGroup(destCtrl).get('name')!.hasError('required') && asFormGroup(destCtrl).get('name')!.touched) {
+                  <mat-error>Name is required</mat-error>
+                }
+              </mat-form-field>
+              <button mat-icon-button type="button" color="warn" (click)="removeDestination(arr, i)">
+                <mat-icon>delete</mat-icon>
+              </button>
+            </div>
+
+            <!-- Criteria list -->
+            <div class="criteria-list" formArrayName="completionCriteria">
+              @for (criteriaCtrl of getCriterias(asFormGroup(destCtrl)).controls; track $index; let ci = $index) {
+                <div class="criteria-item" [formGroupName]="ci">
+                  <mat-form-field appearance="outline" class="criteria-name-field">
+                    <mat-label>Criteria</mat-label>
+                    <input matInput formControlName="name" />
+                    @if (asFormGroup(criteriaCtrl).get('name')!.hasError('required') && asFormGroup(criteriaCtrl).get('name')!.touched) {
+                      <mat-error>Name is required</mat-error>
+                    }
+                  </mat-form-field>
+                  <button mat-icon-button type="button" color="warn" (click)="removeCriteria(asFormGroup(destCtrl), ci)">
+                    <mat-icon>delete</mat-icon>
+                  </button>
+                </div>
+              }
+              <button mat-stroked-button type="button" class="add-criteria-btn" (click)="addCriteria(asFormGroup(destCtrl))">
+                <mat-icon>add</mat-icon> Add Completion Criteria
+              </button>
+            </div>
+          </div>
+        }
+
+        <button mat-stroked-button type="button" class="add-dest-btn" (click)="addDestination(arr)">
+          <mat-icon>add</mat-icon> {{ addLabel }}
+        </button>
+      </div>
+    </ng-template>
+
+    <!-- Destinations tabs -->
+    <mat-tab-group animationDuration="200ms" class="destinations-tabs">
+      <mat-tab label="Destinations">
+        <ng-container [ngTemplateOutlet]="destListTpl"
+          [ngTemplateOutletContext]="{ arr: destinations, addLabel: 'Add Destination' }">
+        </ng-container>
+      </mat-tab>
+
+      <mat-tab label="Final Destinations">
+        <ng-container [ngTemplateOutlet]="destListTpl"
+          [ngTemplateOutletContext]="{ arr: finalDestinations, addLabel: 'Add Final Destination' }">
+        </ng-container>
+      </mat-tab>
+    </mat-tab-group>
+
+  </form>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button mat-dialog-close>Cancel</button>
+  <button mat-flat-button [disabled]="form.invalid" (click)="save()">Save</button>
+</mat-dialog-actions>

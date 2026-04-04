@@ -12,7 +12,7 @@ Built as an Angular 21 SPA scaffolded with Angular CLI 21.2.6.
 - **UI Components**: Angular Material 21.2.x (Material 3, `@angular/material`)
 - **Icons**: Google Material Icons (via Google Fonts CDN)
 - **Styling**: Tailwind CSS 4.x (via `@tailwindcss/postcss`)
-- **Testing**: Vitest 4.x (`ng test`)
+- **Testing**: Vitest 4.x (`ng test, npm run test`)
 - **Validation**: Zod 4.x
 - **Language**: TypeScript 5.9.x
 

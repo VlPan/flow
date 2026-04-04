@@ -1,4 +1,5 @@
 import { TestBed } from '@angular/core/testing';
+import { vi } from 'vitest';
 import { z, ZodType } from 'zod';
 import { STORAGE_REGISTRY } from './storage-registry';
 import { LocalStorageService } from './local-storage.service';
@@ -42,9 +43,31 @@ describe('LocalStorageService', () => {
       expect(service.get(TEST_KEY)).toBeNull();
     });
 
+    it('logs a console.error with Zod issues when schema validation fails', () => {
+      const spy = vi.spyOn(console, 'error').mockImplementation(() => {});
+      localStorage.setItem(TEST_KEY, JSON.stringify({ invalid: true }));
+      service.get(TEST_KEY);
+      expect(spy).toHaveBeenCalledWith(
+        expect.stringContaining('Schema validation failed'),
+        expect.anything()
+      );
+      spy.mockRestore();
+    });
+
     it('returns null when stored data is malformed JSON', () => {
       localStorage.setItem(TEST_KEY, 'not-valid-json');
       expect(service.get(TEST_KEY)).toBeNull();
+    });
+
+    it('logs a console.error when stored JSON is malformed', () => {
+      const spy = vi.spyOn(console, 'error').mockImplementation(() => {});
+      localStorage.setItem(TEST_KEY, 'not-valid-json');
+      service.get(TEST_KEY);
+      expect(spy).toHaveBeenCalledWith(
+        expect.stringContaining('Failed to parse JSON'),
+        expect.anything()
+      );
+      spy.mockRestore();
     });
   });
 

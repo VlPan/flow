@@ -1,1 +1,17 @@
-<h1>Settings</h1>
+<div class="settings-page">
+  <section class="flow-vectors-section">
+    <h2 class="section-title">Flow Vectors</h2>
+    <p class="section-description">Define your areas of focus</p>
+    <div class="vectors-grid">
+      @for (vector of vectors(); track vector.id) {
+        <app-flow-vector-card
+          [vector]="vector"
+          (edit)="openEditDialog($event)"
+          (deleteRequested)="onDeleteRequested(vector)"
+          (destinationToggleRequested)="onDestinationToggleRequested(vector.id, $event)"
+          (criteriaToggleRequested)="onCriteriaToggleRequested(vector.id, $event)" />
+      }
+      <app-flow-vector-placeholder (click)="openCreateDialog()" />
+    </div>
+  </section>
+</div>

@@ -1,0 +1,118 @@
+.form-content {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding-top: 8px;
+}
+
+.top-row {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.name-field {
+  flex: 1;
+}
+
+.icon-field {
+  width: 80px;
+  flex-shrink: 0;
+}
+
+.color-field {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+  position: relative;
+}
+
+.color-label {
+  font-size: 12px;
+  color: var(--mat-sys-on-surface-variant);
+}
+
+.color-swatch {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 2px solid var(--mat-sys-outline-variant);
+  cursor: pointer;
+  transition: border-color 150ms ease;
+  padding: 0;
+}
+
+.color-swatch:hover {
+  border-color: var(--mat-sys-outline);
+}
+
+.color-picker-dropdown {
+  position: absolute;
+  top: calc(100% + 4px);
+  right: 0;
+  z-index: 10;
+  box-shadow: var(--mat-sys-level3);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+::ng-deep mat-dialog-content {
+  overflow-x: hidden !important;
+}
+
+.destinations-tabs {
+  margin-top: 8px;
+}
+
+.tab-content {
+  padding: 16px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.destination-item {
+  border: 1px solid var(--mat-sys-outline-variant);
+  border-radius: 8px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.destination-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.dest-name-field {
+  flex: 1;
+}
+
+.criteria-list {
+  margin-left: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.criteria-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.criteria-name-field {
+  flex: 1;
+}
+
+.add-criteria-btn {
+  align-self: flex-start;
+}
+
+.add-dest-btn {
+  align-self: flex-start;
+}
