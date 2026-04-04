@@ -23,4 +23,5 @@ export class FlowCompletedRow {
   protected readonly borderColor = computed(() => scoreColor(this.record().flowScore));
   protected readonly bgColor = computed(() => scoreColorRgba(this.record().flowScore));
   protected readonly formattedTime = computed(() => formatSessionTime(this.record().sessionMinutes));
+  protected readonly isLongSession = computed(() => this.record().sessionMinutes >= 90);
 }

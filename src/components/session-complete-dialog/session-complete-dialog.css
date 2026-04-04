@@ -1,3 +1,7 @@
+mat-dialog-content {
+  overflow-x: hidden;
+}
+
 .dialog-form {
   display: flex;
   flex-direction: column;

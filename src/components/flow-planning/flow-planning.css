@@ -56,8 +56,8 @@ app-weekly-date-picker {
   align-items: center;
   gap: 12px;
   padding: 10px 12px;
-  background: rgba(76, 175, 80, 0.1);
-  border-top: 1px solid rgba(76, 175, 80, 0.3);
+  background: rgba(var(--flow-success-rgb), 0.1);
+  border-top: 1px solid rgba(var(--flow-success-rgb), 0.3);
 }
 
 .active-banner.paused {

@@ -51,6 +51,10 @@
   white-space: nowrap;
 }
 
+.time-badge.green {
+  background: rgba(var(--flow-success-rgb), 0.3);
+}
+
 .score-badge {
   font: var(--mat-sys-label-medium);
   font-weight: 700;
