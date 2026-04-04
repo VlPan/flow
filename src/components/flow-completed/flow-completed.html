@@ -1,5 +1,10 @@
 <div class="content">
-  <h3 class="section-label">Completed</h3>
+  <div class="section-header">
+    <h3 class="section-label">Completed</h3>
+    @if (dailyScore() > 0) {
+      <span class="daily-score">{{ dailyScore() }} pts</span>
+    }
+  </div>
 
   <div class="records-list">
     @for (record of todayRecords(); track record.id) {

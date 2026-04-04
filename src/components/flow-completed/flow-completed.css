@@ -2,9 +2,21 @@
   padding: 16px;
 }
 
+.section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
 .section-label {
   font: var(--mat-sys-title-medium);
-  margin: 0 0 16px;
+  margin: 0;
+}
+
+.daily-score {
+  font: var(--mat-sys-label-large);
+  color: var(--mat-sys-primary);
 }
 
 .records-list {

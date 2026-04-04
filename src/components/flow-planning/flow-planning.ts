@@ -136,6 +136,10 @@ export class FlowPlanning {
     const minutesAgo = Math.floor(
       (Date.now() - new Date(recentRecord.finishedAt).getTime()) / 60000
     );
+    if (minutesAgo < 5) {
+      this.sessionService.start(row);
+      return;
+    }
     this.dialog
       .open(ConfirmDialog, {
         width: '400px',

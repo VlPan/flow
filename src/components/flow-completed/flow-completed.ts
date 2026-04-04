@@ -13,6 +13,7 @@ import {
 import { SessionRecord } from '../../models/session.model';
 import { FlowVector } from '../../models/flow-vector.model';
 import { toLocalDateString } from '../../utils/date.utils';
+import { calculateDailyScore } from '../../utils/scoring.utils';
 
 @Component({
   selector: 'app-flow-completed',
@@ -41,6 +42,10 @@ export class FlowCompleted {
       r => r.startDate === date && this.vectorsMap().has(r.flowVectorId)
     );
   });
+
+  protected readonly dailyScore = computed(() =>
+    calculateDailyScore(this.todayRecords())
+  );
 
   protected vectorFor(record: SessionRecord): FlowVector {
     return this.vectorsMap().get(record.flowVectorId)!;
