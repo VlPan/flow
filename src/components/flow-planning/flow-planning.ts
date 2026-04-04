@@ -52,6 +52,19 @@ export class FlowPlanning {
     );
   });
 
+  protected readonly quickPickVectors = computed(() => {
+    if (this.sessionService.activeSession()) return [];
+    return this.flowVectorsService.vectors();
+  });
+
+  protected quickAdd(vector: FlowVector): void {
+    this.planningRowService.create({
+      flowVectorId: vector.id,
+      shortDescription: '',
+      createdDate: toLocalDateString(this.dateService.selectedDay()),
+    });
+  }
+
   protected readonly activeBannerVector = computed(() => {
     const session = this.sessionService.activeSession();
     if (!session) return null;

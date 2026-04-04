@@ -27,6 +27,24 @@
         <span>Add plan</span>
       </div>
     </div>
+
+    @if (quickPickVectors().length > 0) {
+      <div class="quick-pick">
+        <span class="quick-pick-label">Quick add</span>
+        <div class="quick-pick-cards">
+          @for (vector of quickPickVectors(); track vector.id) {
+            <button
+              class="quick-pick-card"
+              (click)="quickAdd(vector)"
+              [style.border-color]="vector.color"
+            >
+              <span class="quick-pick-icon">{{ vector.icon }}</span>
+              <span class="quick-pick-name" [style.color]="vector.color">{{ vector.name }}</span>
+            </button>
+          }
+        </div>
+      </div>
+    }
   </div>
 </div>
 
