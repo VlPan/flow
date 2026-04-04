@@ -3,7 +3,7 @@
 }
 
 .card {
-  height: 280px;
+  height: 420px;
   overflow: hidden;
   display: flex;
   flex-direction: column;
