@@ -1,0 +1,26 @@
+<div class="categories-page">
+  <div class="categories-list">
+    @for (category of categories(); track category.id) {
+      <div class="category-row">
+        <div class="color-swatch" [style.background]="category.color"></div>
+        <span class="category-name">{{ category.name }}</span>
+        <div class="actions">
+          <button mat-icon-button (click)="openEditDialog(category)" aria-label="Edit category">
+            <mat-icon>edit</mat-icon>
+          </button>
+          <button mat-icon-button color="warn" (click)="onDeleteRequested(category)" aria-label="Delete category">
+            <mat-icon>delete</mat-icon>
+          </button>
+        </div>
+      </div>
+    }
+
+    @if (categories().length === 0) {
+      <p class="empty-hint">No categories yet. Create one below.</p>
+    }
+  </div>
+
+  <button mat-stroked-button class="add-btn" (click)="openCreateDialog()">
+    <mat-icon>add</mat-icon> Add Category
+  </button>
+</div>

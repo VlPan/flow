@@ -1,0 +1,50 @@
+.categories-page {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 24px;
+}
+
+.categories-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.category-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--mat-sys-outline-variant);
+  background: var(--mat-sys-surface-container-low);
+}
+
+.color-swatch {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  border: 1px solid var(--mat-sys-outline-variant);
+}
+
+.category-name {
+  flex: 1;
+  font-size: 14px;
+}
+
+.actions {
+  display: flex;
+  gap: 4px;
+}
+
+.empty-hint {
+  color: var(--mat-sys-on-surface-variant);
+  font-size: 14px;
+  padding: 8px 0;
+}
+
+.add-btn {
+  align-self: flex-start;
+}

@@ -26,6 +26,7 @@ export const flowVectorSchema = z.object({
   destinations: z.array(destinationSchema),
   finalDestinations: z.array(destinationSchema),
   deleted: z.boolean(),
+  categoryId: z.string().nullable().optional(),
 });
 
 export const flowVectorsSchema = z.array(flowVectorSchema);

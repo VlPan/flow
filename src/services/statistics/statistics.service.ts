@@ -3,6 +3,7 @@ import { EChartsCoreOption } from 'echarts/core';
 import { SessionService } from '../session/session.service';
 import { FlowVectorsService } from '../flow-vectors/flow-vectors.service';
 import { HabitsService } from '../habits/habits.service';
+import { CategoriesService } from '../categories/categories.service';
 import {
   TimeRange,
   buildChartData,
@@ -21,6 +22,7 @@ export class StatisticsService {
   private readonly sessionService = inject(SessionService);
   private readonly vectorsService = inject(FlowVectorsService);
   private readonly habitsService = inject(HabitsService);
+  private readonly categoriesService = inject(CategoriesService);
 
   readonly selectedRange = signal<TimeRange>('30d');
 
@@ -30,6 +32,7 @@ export class StatisticsService {
     buildChartData(
       this.sessionService.records(),
       this.vectorsService.allVectorsIncludingDeleted(),
+      this.categoriesService.allCategoriesIncludingDeleted(),
       this.selectedRange(),
       this.today,
       this.habitsService.completions(),

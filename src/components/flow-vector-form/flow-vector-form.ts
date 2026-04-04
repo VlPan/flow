@@ -14,8 +14,11 @@ import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 import { MatTabsModule } from '@angular/material/tabs';
 import { MatIconModule } from '@angular/material/icon';
+import { MatSelectModule } from '@angular/material/select';
 import { ColorCompactModule } from 'ngx-color/compact';
 import { FlowVector, DEFAULT_VECTOR_COLOR, DEFAULT_VECTOR_ICON } from '../../models/flow-vector.model';
+import { CategoriesService } from '../../services/categories/categories.service';
+import { OTHERS_CATEGORY_ID } from '../../models/category.model';
 
 @Component({
   selector: 'app-flow-vector-form',
@@ -29,6 +32,7 @@ import { FlowVector, DEFAULT_VECTOR_COLOR, DEFAULT_VECTOR_ICON } from '../../mod
     MatButtonModule,
     MatTabsModule,
     MatIconModule,
+    MatSelectModule,
     ColorCompactModule,
   ],
   templateUrl: './flow-vector-form.html',
@@ -37,10 +41,13 @@ import { FlowVector, DEFAULT_VECTOR_COLOR, DEFAULT_VECTOR_ICON } from '../../mod
 export class FlowVectorForm {
   private readonly fb = inject(FormBuilder);
   private readonly dialogRef = inject(MatDialogRef<FlowVectorForm>);
+  private readonly categoriesService = inject(CategoriesService);
   protected readonly data = inject<FlowVector | null>(MAT_DIALOG_DATA);
 
   protected readonly isEditMode = !!this.data;
   protected colorPickerOpen = signal(false);
+  protected readonly OTHERS_CATEGORY_ID = OTHERS_CATEGORY_ID;
+  protected readonly categories = this.categoriesService.categories;
 
   @HostListener('document:mousedown', ['$event'])
   onDocumentClick(event: MouseEvent): void {
@@ -55,6 +62,7 @@ export class FlowVectorForm {
     name: [this.data?.name ?? '', Validators.required],
     icon: [this.data?.icon],
     color: [this.data?.color ?? DEFAULT_VECTOR_COLOR],
+    categoryId: [this.data?.categoryId ?? null],
     destinations: this.fb.array(
       (this.data?.destinations ?? []).map(d => this.buildDestinationGroup(d))
     ),
@@ -125,6 +133,7 @@ export class FlowVectorForm {
       name: raw.name,
       icon: raw.icon || DEFAULT_VECTOR_ICON,
       color: raw.color || DEFAULT_VECTOR_COLOR,
+      categoryId: raw.categoryId ?? null,
       destinations: this.mapRawDestinations(raw.destinations),
       finalDestinations: this.mapRawDestinations(raw.finalDestinations),
     });

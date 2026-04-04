@@ -1,0 +1,61 @@
+.form-content {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding-top: 8px;
+}
+
+.top-row {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.name-field {
+  flex: 1;
+}
+
+.color-field {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+  position: relative;
+}
+
+.color-label {
+  font-size: 12px;
+  color: var(--mat-sys-on-surface-variant);
+}
+
+.color-swatch {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 2px solid var(--mat-sys-outline-variant);
+  cursor: pointer;
+  transition: border-color 150ms ease;
+  padding: 0;
+}
+
+.color-swatch:hover {
+  border-color: var(--mat-sys-outline);
+}
+
+.color-picker-dropdown {
+  position: absolute;
+  top: calc(100% + 4px);
+  right: 0;
+  z-index: 10;
+  box-shadow: var(--mat-sys-level3);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+:host {
+  ::ng-deep mat-dialog-content {
+    overflow-x: hidden !important;
+    min-height:220px !important;
+  }
+}

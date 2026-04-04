@@ -1,5 +1,6 @@
 import { z, ZodType } from 'zod';
 import { flowVectorsSchema } from '../../models/flow-vector.model';
+import { categoriesSchema } from '../../models/category.model';
 import { planningRowsSchema } from '../../models/planning-row.model';
 import { activeSessionSchema, sessionRecordsSchema } from '../../models/session.model';
 import { rewardsSchema } from '../../models/reward.model';
@@ -14,6 +15,7 @@ import { habitGroupsSchema, habitsSchema, habitCompletionsSchema } from '../../m
 export const STORAGE_REGISTRY = {
   sidenavExpanded: z.boolean(),
   flowVectors: flowVectorsSchema,
+  categories: categoriesSchema,
   flowSplitSizes: z.tuple([z.number(), z.number()]),
   planningRows: planningRowsSchema,
   activeSession: activeSessionSchema.nullable(),

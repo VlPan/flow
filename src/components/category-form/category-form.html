@@ -1,0 +1,32 @@
+<h2 mat-dialog-title>{{ isEditMode ? 'Edit Category' : 'Create Category' }}</h2>
+
+<mat-dialog-content>
+  <form [formGroup]="form" class="form-content">
+    <div class="top-row">
+      <mat-form-field appearance="outline" class="name-field">
+        <mat-label>Name</mat-label>
+        <input matInput formControlName="name" placeholder="Category name" />
+        @if (form.get('name')!.hasError('required') && form.get('name')!.touched) {
+          <mat-error>Name is required</mat-error>
+        }
+      </mat-form-field>
+
+      <div class="color-field">
+        <label class="color-label">Color</label>
+        <button type="button" class="color-swatch" [style.background]="form.get('color')!.value"
+          (click)="$event.stopPropagation(); colorPickerOpen.set(!colorPickerOpen())">
+        </button>
+        @if (colorPickerOpen()) {
+          <div class="color-picker-dropdown">
+            <color-compact [color]="form.get('color')!.value" (onChangeComplete)="onColorChange($event)"></color-compact>
+          </div>
+        }
+      </div>
+    </div>
+  </form>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button mat-dialog-close>Cancel</button>
+  <button mat-flat-button [disabled]="form.invalid" (click)="save()">Save</button>
+</mat-dialog-actions>

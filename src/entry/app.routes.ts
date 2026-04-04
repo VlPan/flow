@@ -20,6 +20,7 @@ export const routes: Routes = [
           { path: 'flow-vectors', loadComponent: () => import('../pages/settings/flow-vectors/flow-vectors-settings.page').then(m => m.FlowVectorsSettingsPage) },
           { path: 'session-settings', loadComponent: () => import('../pages/settings/session-settings/session-settings.page').then(m => m.SessionSettingsPage) },
           { path: 'balance-settings', loadComponent: () => import('../pages/settings/balance-settings/balance-settings.page').then(m => m.BalanceSettingsPage) },
+          { path: 'categories', loadComponent: () => import('../pages/settings/categories/categories-settings.page').then(m => m.CategoriesSettingsPage) },
         ],
       },
     ],
