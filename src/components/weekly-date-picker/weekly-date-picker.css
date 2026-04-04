@@ -1,0 +1,94 @@
+:host {
+  display: block;
+  width: 100%;
+}
+
+.picker {
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.days {
+  display: flex;
+  flex: 1;
+  justify-content: space-evenly;
+}
+
+.day-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 56px;
+  border-radius: 12px;
+  border: 2px solid transparent;
+  background: transparent;
+  cursor: pointer;
+  padding: 4px 0;
+  gap: 2px;
+  transition:
+    background-color 0.15s ease,
+    color 0.15s ease,
+    border-color 0.15s ease,
+    opacity 0.15s ease;
+  color: var(--mat-sys-on-surface);
+  position: relative;
+}
+
+.day-btn:hover:not(.is-selected) {
+  background-color: color-mix(in srgb, var(--mat-sys-on-surface) 8%, transparent);
+}
+
+.day-letter {
+  font-size: 11px;
+  font-weight: 500;
+  opacity: 0.7;
+  line-height: 1;
+}
+
+.day-number {
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 1;
+}
+
+/* Selected */
+.day-btn.is-selected {
+  background-color: var(--mat-sys-primary);
+  color: var(--mat-sys-on-primary);
+}
+
+.day-btn.is-selected .day-letter {
+  opacity: 0.85;
+}
+
+/* Today (not selected) */
+.day-btn.is-today:not(.is-selected) {
+  border-color: var(--mat-sys-primary);
+  color: var(--mat-sys-primary);
+}
+
+/* Today + selected: small dot below the number */
+.day-btn.is-today.is-selected::after {
+  content: '';
+  position: absolute;
+  bottom: 6px;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background-color: var(--mat-sys-on-primary);
+}
+
+/* Past (not selected) */
+.day-btn.is-past:not(.is-selected) {
+  opacity: 0.45;
+}
+
+/* Today chip */
+.today-chip-row {
+  display: flex;
+  justify-content: center;
+  margin-top: 10px;
+}

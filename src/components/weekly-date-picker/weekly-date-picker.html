@@ -1,0 +1,40 @@
+<div class="picker">
+  <button
+    mat-icon-button
+    [disabled]="!dateService.canGoPrev()"
+    (click)="dateService.goToPrevWeek()"
+    aria-label="Previous week"
+  >
+    <mat-icon>chevron_left</mat-icon>
+  </button>
+
+  <div class="days">
+    @for (day of dateService.weekDays(); track day.getTime()) {
+      <button
+        class="day-btn"
+        [class.is-selected]="isSameDay(day, dateService.selectedDay())"
+        [class.is-today]="isSameDay(day, today)"
+        [class.is-past]="isPastDay(day, today)"
+        (click)="dateService.selectDay(day)"
+        [attr.aria-label]="day.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })"
+        [attr.aria-pressed]="isSameDay(day, dateService.selectedDay())"
+      >
+        <span class="day-letter">{{ getDayLetter(day) }}</span>
+        <span class="day-number">{{ day.getDate() }}</span>
+      </button>
+    }
+  </div>
+
+  <button
+    mat-icon-button
+    [disabled]="!dateService.canGoNext()"
+    (click)="dateService.goToNextWeek()"
+    aria-label="Next week"
+  >
+    <mat-icon>chevron_right</mat-icon>
+  </button>
+</div>
+
+<div class="today-chip-row" [style.visibility]="isSameDay(dateService.selectedDay(), today) ? 'hidden' : 'visible'">
+  <button mat-stroked-button (click)="dateService.goToToday()">Today</button>
+</div>
