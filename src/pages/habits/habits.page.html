@@ -1,1 +1,144 @@
-<h1>Habits</h1>
+<div class="p-6 flex flex-col gap-5 h-full overflow-y-auto">
+
+  <mat-tab-group>
+
+    <!-- ── Active tab ── -->
+    <mat-tab label="Active">
+      <div class="flex flex-col gap-5 pt-4 p-2.5">
+        <mat-accordion [multi]="true">
+          @for (group of sortedGroups(); track group.id) {
+            <mat-expansion-panel expanded>
+              <mat-expansion-panel-header>
+                <mat-panel-title class="group-header">
+                  <span class="font-medium flex-1">{{ group.name }}</span>
+                  <span (click)="$event.stopPropagation()">
+                    <button mat-icon-button [matMenuTriggerFor]="groupMenu">
+                      <mat-icon>more_vert</mat-icon>
+                    </button>
+                    <mat-menu #groupMenu="matMenu">
+                      <button mat-menu-item (click)="addHabit(group.id)">
+                        <mat-icon>add</mat-icon> Add habit
+                      </button>
+                      <button mat-menu-item (click)="editGroup(group)">
+                        <mat-icon>edit</mat-icon> Edit group
+                      </button>
+                      @if (group.id !== othersGroupId) {
+                        <button mat-menu-item (click)="deleteGroup(group)">
+                          <mat-icon>delete</mat-icon> Delete group
+                        </button>
+                      }
+                    </mat-menu>
+                  </span>
+                </mat-panel-title>
+              </mat-expansion-panel-header>
+
+              @if (habitsForGroup(group.id).length === 0) {
+                <p class="text-sm text-gray-400 py-2">No habits yet. Click + to add one.</p>
+              }
+
+              @for (habit of habitsForGroup(group.id); track habit.id) {
+                <div class="habit-row">
+
+                  <!-- LEFT: name + meta info -->
+                  <div class="flex items-center gap-2 flex-1 min-w-0 overflow-hidden">
+                    @if (habit.emoji) { <span class="shrink-0">{{ habit.emoji }}</span> }
+                    <span
+                      class="text-sm font-medium truncate"
+                      [title]="habit.name"
+                    >{{ habit.name }}</span>
+                    <span class="text-xs text-gray-400 shrink-0 whitespace-nowrap">
+                      ({{ habit.basePoints }}pts) {{ habits.weeklyCompletionCount(habit.id) }}/{{ habit.frequency }} done
+                    </span>
+                    <span
+                      class="shrink-0 text-sm whitespace-nowrap"
+                      [title]="'Streak: ' + habits.getSticks(habit.id) + '/7 (+' + habits.getSticks(habit.id) * 10 + '%)'"
+                    >🔥 {{ habits.getSticks(habit.id) }}</span>
+                    <span
+                      class="mastery-dot shrink-0"
+                      [class.mastery-low]="masteryPercent(habit) < 50"
+                      [class.mastery-mid]="masteryPercent(habit) >= 50 && masteryPercent(habit) < 80"
+                      [class.mastery-high]="masteryPercent(habit) >= 80"
+                      [title]="'Mastery: ' + masteryPercent(habit) + '%'"
+                    >{{ masteryPercent(habit) }}%</span>
+                  </div>
+
+                  <!-- RIGHT: day chips + actions -->
+                  <div class="flex items-center gap-1 shrink-0">
+                    @for (day of last7Days(); track day) {
+                      <button
+                        class="day-chip"
+                        [class.day-chip-checked]="habits.isCompleted(habit.id, day)"
+                        (click)="habits.toggleCompletion(habit.id, day)"
+                        [title]="dayLabel(day)"
+                      >{{ dayInitial(day) }}</button>
+                    }
+                    <button mat-icon-button [matMenuTriggerFor]="habitMenu">
+                      <mat-icon>more_vert</mat-icon>
+                    </button>
+                    <mat-menu #habitMenu="matMenu">
+                      <button mat-menu-item (click)="editHabit(habit)">
+                        <mat-icon>edit</mat-icon> Edit
+                      </button>
+                      <button mat-menu-item (click)="deleteHabit(habit)">
+                        <mat-icon>delete</mat-icon> Delete
+                      </button>
+                    </mat-menu>
+                  </div>
+
+                </div>
+              }
+            </mat-expansion-panel>
+          }
+        </mat-accordion>
+
+        <button mat-stroked-button class="self-start" (click)="addGroup()">
+          <mat-icon>add</mat-icon>
+          Add Group
+        </button>
+      </div>
+    </mat-tab>
+
+    <!-- ── Mastered tab ── -->
+    <mat-tab>
+      <ng-template mat-tab-label>Mastered ({{ habits.masteredHabits().length }})</ng-template>
+      <div class="pt-4">
+        @if (habits.masteredHabits().length === 0) {
+          <p class="text-gray-400 text-center py-10">No mastered habits yet. Keep going!</p>
+        } @else {
+          <div class="flex flex-col gap-3">
+            @for (habit of habits.masteredHabits(); track habit.id) {
+              <mat-card>
+                <mat-card-content class="mastered-content">
+                  <div class="flex items-center gap-2">
+                    @if (habit.emoji) { <span class="text-lg">{{ habit.emoji }}</span> }
+                    <div class="flex-1 min-w-0">
+                      <div class="font-medium">{{ habit.name }}</div>
+                      <div class="text-xs text-gray-400">{{ habit.frequency }}×/wk · {{ habit.basePoints }} pts/completion</div>
+                    </div>
+                    <mat-icon class="trophy-icon">emoji_events</mat-icon>
+                  </div>
+                  <div class="flex items-center gap-2 flex-wrap">
+                    @if (!habit.masteryRewardClaimed) {
+                      <button mat-flat-button (click)="claimMastery(habit)">
+                        <mat-icon>redeem</mat-icon>
+                        Claim {{ habit.masteryRewardPoints | number: '1.0-0' }} pts
+                      </button>
+                    } @else {
+                      <span class="claimed-badge">Reward claimed</span>
+                    }
+                    <button mat-button (click)="unmaster(habit)">
+                      <mat-icon>undo</mat-icon>
+                      Un-master
+                    </button>
+                  </div>
+                </mat-card-content>
+              </mat-card>
+            }
+          </div>
+        }
+      </div>
+    </mat-tab>
+
+  </mat-tab-group>
+
+</div>

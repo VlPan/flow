@@ -6,6 +6,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { trigger, state, style, transition, animate } from '@angular/animations';
 import { UiService } from '../../services/ui/ui.service';
 import { SessionService } from '../../services/session/session.service';
+import { BalanceService } from '../../services/balance/balance.service';
 
 interface NavItem {
   label: string;
@@ -37,6 +38,9 @@ interface NavItem {
 export class Shell {
   protected readonly ui = inject(UiService);
   private readonly sessionService = inject(SessionService);
+  private readonly balanceService = inject(BalanceService);
+
+  protected readonly points = this.balanceService.pointsBalance;
 
   protected readonly hasActiveSession = computed(() => !!this.sessionService.activeSession());
 

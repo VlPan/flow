@@ -1,0 +1,71 @@
+import { Component, inject } from '@angular/core';
+import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { MatSelectModule } from '@angular/material/select';
+import { MatButtonModule } from '@angular/material/button';
+import { Habit, HabitGroup } from '../../models/habit.model';
+
+export interface HabitFormData {
+  habit: Habit | null;
+  groups: HabitGroup[];
+  defaultGroupId?: string;
+}
+
+@Component({
+  selector: 'app-habit-form',
+  standalone: true,
+  imports: [
+    ReactiveFormsModule,
+    MatDialogModule,
+    MatFormFieldModule,
+    MatInputModule,
+    MatSelectModule,
+    MatButtonModule,
+  ],
+  templateUrl: './habit-form.html',
+})
+export class HabitForm {
+  private readonly fb = inject(FormBuilder);
+  private readonly dialogRef = inject(MatDialogRef<HabitForm>);
+  protected readonly data = inject<HabitFormData>(MAT_DIALOG_DATA);
+
+  protected readonly isEditMode = !!this.data.habit;
+  protected readonly groups = this.data.groups;
+
+  protected readonly form = this.fb.group({
+    name: [this.data.habit?.name ?? '', Validators.required],
+    emoji: [this.data.habit?.emoji ?? ''],
+    groupId: [this.data.habit?.groupId ?? this.data.defaultGroupId ?? this.groups[0]?.id ?? '', Validators.required],
+    basePoints: [
+      this.data.habit?.basePoints ?? 10,
+      [Validators.required, Validators.min(1)],
+    ],
+    frequency: [
+      this.data.habit?.frequency ?? 3,
+      [Validators.required, Validators.min(1), Validators.max(7)],
+    ],
+    masteryRewardPoints: [
+      this.data.habit?.masteryRewardPoints ?? 100,
+      [Validators.required, Validators.min(1)],
+    ],
+  });
+
+  protected save(): void {
+    if (this.form.invalid) return;
+    const raw = this.form.getRawValue();
+    this.dialogRef.close({
+      name: raw.name!,
+      emoji: raw.emoji || undefined,
+      groupId: raw.groupId!,
+      basePoints: raw.basePoints!,
+      frequency: raw.frequency!,
+      masteryRewardPoints: raw.masteryRewardPoints!,
+    });
+  }
+
+  protected cancel(): void {
+    this.dialogRef.close(undefined);
+  }
+}

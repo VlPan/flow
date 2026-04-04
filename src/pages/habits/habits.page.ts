@@ -1,8 +1,170 @@
-import { Component } from '@angular/core';
+import { Component, computed, inject } from '@angular/core';
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
+import { MatExpansionModule } from '@angular/material/expansion';
+import { MatCardModule } from '@angular/material/card';
+import { MatMenuModule } from '@angular/material/menu';
+import { MatTabsModule } from '@angular/material/tabs';
+import { MatDialog } from '@angular/material/dialog';
+import { DecimalPipe } from '@angular/common';
+import { HabitsService, OTHERS_GROUP_ID } from '../../services/habits/habits.service';
+import { ConfirmDialog } from '../../components/confirm-dialog/confirm-dialog';
+import { HabitGroupForm } from '../../components/habit-group-form/habit-group-form';
+import { HabitForm } from '../../components/habit-form/habit-form';
+import {
+  DeleteHabitDialog,
+  DeleteHabitDialogResult,
+} from '../../components/delete-habit-dialog/delete-habit-dialog';
+import { ClaimMasteryDialog } from '../../components/claim-mastery-dialog/claim-mastery-dialog';
+import { Habit, HabitGroup } from '../../models/habit.model';
+import { getLastNDays } from '../../utils/habit.utils';
 
 @Component({
   selector: 'app-habits-page',
   standalone: true,
+  imports: [
+    DecimalPipe,
+    MatButtonModule,
+    MatIconModule,
+    MatExpansionModule,
+    MatCardModule,
+    MatMenuModule,
+    MatTabsModule,
+  ],
   templateUrl: './habits.page.html',
+  styleUrl: './habits.page.css',
 })
-export class HabitsPage {}
+export class HabitsPage {
+  protected readonly habits = inject(HabitsService);
+  private readonly dialog = inject(MatDialog);
+
+  protected readonly othersGroupId = OTHERS_GROUP_ID;
+
+  protected readonly last7Days = computed(() => getLastNDays(new Date(), 7));
+
+  // Others group always last
+  protected readonly sortedGroups = computed(() => {
+    const all = this.habits.groups();
+    return [...all.filter(g => g.id !== OTHERS_GROUP_ID), ...all.filter(g => g.id === OTHERS_GROUP_ID)];
+  });
+
+  protected dayLabel(dateStr: string): string {
+    const date = new Date(dateStr + 'T00:00:00');
+    return date.toLocaleDateString('en', { weekday: 'short' }) + ' ' + date.getDate();
+  }
+
+  protected dayInitial(dateStr: string): string {
+    const date = new Date(dateStr + 'T00:00:00');
+    return date.toLocaleDateString('en', { weekday: 'narrow' });
+  }
+
+  protected habitsForGroup(groupId: string): Habit[] {
+    return this.habits.habitsByGroup()[groupId] ?? [];
+  }
+
+  protected masteryPercent(habit: Habit): number {
+    return this.habits.getMasteryProgress(habit).percent;
+  }
+
+  private totalHabitPoints(habitId: string): number {
+    return this.habits
+      .completions()
+      .filter(c => c.habitId === habitId)
+      .reduce((sum, c) => sum + c.pointsEarned, 0);
+  }
+
+  // ── Groups ──────────────────────────────────────────────────────────────────
+
+  protected addGroup(): void {
+    this.dialog
+      .open(HabitGroupForm, { data: null, width: '380px' })
+      .afterClosed()
+      .subscribe((result: { name: string } | undefined) => {
+        if (result) this.habits.addGroup(result.name);
+      });
+  }
+
+  protected editGroup(group: HabitGroup): void {
+    this.dialog
+      .open(HabitGroupForm, { data: group, width: '380px' })
+      .afterClosed()
+      .subscribe((result: { name: string } | undefined) => {
+        if (result) this.habits.updateGroup(group.id, result.name);
+      });
+  }
+
+  protected deleteGroup(group: HabitGroup): void {
+    this.dialog
+      .open(ConfirmDialog, {
+        data: { message: `Delete group "${group.name}"? Habits will be moved to Others.` },
+      })
+      .afterClosed()
+      .subscribe((confirmed: boolean) => {
+        if (confirmed) this.habits.deleteGroup(group.id);
+      });
+  }
+
+  // ── Habits ──────────────────────────────────────────────────────────────────
+
+  protected addHabit(groupId: string): void {
+    this.dialog
+      .open(HabitForm, {
+        data: { habit: null, groups: this.habits.groups(), defaultGroupId: groupId },
+        width: '440px',
+      })
+      .afterClosed()
+      .subscribe((result: any) => {
+        if (result) this.habits.addHabit(result);
+      });
+  }
+
+  protected editHabit(habit: Habit): void {
+    this.dialog
+      .open(HabitForm, {
+        data: { habit, groups: this.habits.groups() },
+        width: '440px',
+      })
+      .afterClosed()
+      .subscribe((result: any) => {
+        if (result) this.habits.updateHabit(habit.id, result);
+      });
+  }
+
+  protected deleteHabit(habit: Habit): void {
+    const pointsEarned = this.totalHabitPoints(habit.id);
+    this.dialog
+      .open(DeleteHabitDialog, {
+        data: { habitName: habit.name, pointsEarned },
+        width: '400px',
+      })
+      .afterClosed()
+      .subscribe((result: DeleteHabitDialogResult | undefined) => {
+        if (result) this.habits.deleteHabit(habit.id, result === 'keep-points');
+      });
+  }
+
+  // ── Mastery ──────────────────────────────────────────────────────────────────
+
+  protected claimMastery(habit: Habit): void {
+    this.dialog
+      .open(ClaimMasteryDialog, {
+        data: { habitName: habit.name, defaultPoints: habit.masteryRewardPoints },
+        width: '380px',
+      })
+      .afterClosed()
+      .subscribe((amount: number | undefined) => {
+        if (amount !== undefined) this.habits.claimMasteryReward(habit.id, amount);
+      });
+  }
+
+  protected unmaster(habit: Habit): void {
+    this.dialog
+      .open(ConfirmDialog, {
+        data: { message: `Move "${habit.name}" back to active habits?`, confirmLabel: 'Un-master' },
+      })
+      .afterClosed()
+      .subscribe((confirmed: boolean) => {
+        if (confirmed) this.habits.unmaster(habit.id);
+      });
+  }
+}

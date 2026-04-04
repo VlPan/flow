@@ -9,7 +9,8 @@
       "WebSearch",
       "Bash(npm install:*)",
       "Skill(codemie:codemie-commit)",
-      "Bash(node generate-test-data.js)"
+      "Bash(node generate-test-data.js)",
+      "Bash(npx tsc:*)"
     ]
   }
 }

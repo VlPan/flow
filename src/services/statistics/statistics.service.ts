@@ -2,6 +2,7 @@ import { Injectable, computed, inject, signal } from '@angular/core';
 import { EChartsCoreOption } from 'echarts/core';
 import { SessionService } from '../session/session.service';
 import { FlowVectorsService } from '../flow-vectors/flow-vectors.service';
+import { HabitsService } from '../habits/habits.service';
 import {
   TimeRange,
   buildChartData,
@@ -19,6 +20,7 @@ import {
 export class StatisticsService {
   private readonly sessionService = inject(SessionService);
   private readonly vectorsService = inject(FlowVectorsService);
+  private readonly habitsService = inject(HabitsService);
 
   readonly selectedRange = signal<TimeRange>('30d');
 
@@ -30,6 +32,7 @@ export class StatisticsService {
       this.vectorsService.allVectorsIncludingDeleted(),
       this.selectedRange(),
       this.today,
+      this.habitsService.completions(),
     ),
   );
 

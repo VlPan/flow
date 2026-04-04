@@ -1,8 +1,10 @@
 import { EChartsCoreOption } from 'echarts/core';
 import { SessionRecord } from '../models/session.model';
 import { FlowVector, DEFAULT_VECTOR_COLOR } from '../models/flow-vector.model';
+import { HabitCompletion } from '../models/habit.model';
 import { calculateSessionScore } from './scoring.utils';
 import { getWeekStart, toLocalDateString } from './date.utils';
+import { getHabitPointsPerDay } from './habit.utils';
 
 export type TimeRange = '7d' | '30d' | '100d' | 'all';
 
@@ -13,6 +15,7 @@ interface Bucket {
   key: string;
   label: string;
   score: number;
+  habitPts: number;
   minutesByVector: Record<string, number>;
 }
 
@@ -58,6 +61,7 @@ function buildDailyBuckets(
   start: Date,
   end: Date,
   showWeekday: boolean,
+  habitPtsPerDay: Record<string, number>,
 ): Bucket[] {
   const byDate = new Map<string, SessionRecord[]>();
   for (const r of records) {
@@ -73,13 +77,19 @@ function buildDailyBuckets(
   while (cur <= endNorm) {
     const key = toLocalDateString(cur);
     const { score, minutesByVector } = calcBucket(byDate.get(key) ?? []);
-    buckets.push({ key, label: formatDayLabel(cur, showWeekday), score, minutesByVector });
+    const habitPts = habitPtsPerDay[key] ?? 0;
+    buckets.push({ key, label: formatDayLabel(cur, showWeekday), score, habitPts, minutesByVector });
     cur = addDays(cur, 1);
   }
   return buckets;
 }
 
-function buildWeeklyBuckets(records: SessionRecord[], start: Date, end: Date): Bucket[] {
+function buildWeeklyBuckets(
+  records: SessionRecord[],
+  start: Date,
+  end: Date,
+  habitPtsPerDay: Record<string, number>,
+): Bucket[] {
   const buckets: Bucket[] = [];
   let weekStart = normDate(getWeekStart(start));
   const endNorm = normDate(end);
@@ -91,7 +101,10 @@ function buildWeeklyBuckets(records: SessionRecord[], start: Date, end: Date): B
     const weekRecs = records.filter(r => r.startDate >= wsStr && r.startDate <= weStr);
     const { score, minutesByVector } = calcBucket(weekRecs);
     const label = `${MONTHS[weekStart.getMonth()]} ${weekStart.getDate()}`;
-    buckets.push({ key: wsStr, label, score, minutesByVector });
+    const habitPts = Object.entries(habitPtsPerDay)
+      .filter(([d]) => d >= wsStr && d <= weStr)
+      .reduce((sum, [, pts]) => sum + pts, 0);
+    buckets.push({ key: wsStr, label, score, habitPts, minutesByVector });
     weekStart = addDays(weekStart, 7);
   }
   return buckets;
@@ -104,6 +117,7 @@ export function buildChartData(
   allVectors: FlowVector[],
   range: TimeRange,
   today: Date,
+  habitCompletions: HabitCompletion[] = [],
 ): ChartData {
   const todayNorm = normDate(today);
   let startDate: Date;
@@ -116,11 +130,14 @@ export function buildChartData(
   } else if (range === '100d') {
     startDate = addDays(todayNorm, -99);
   } else {
-    if (records.length === 0) return { buckets: [], activeVectors: [], isWeekly: false, filteredRecords: [] };
-    const earliestStr = records.reduce(
-      (min, r) => (r.startDate < min ? r.startDate : min),
-      records[0].startDate,
-    );
+    if (records.length === 0 && habitCompletions.length === 0) {
+      return { buckets: [], activeVectors: [], isWeekly: false, filteredRecords: [] };
+    }
+    const allDates = [
+      ...records.map(r => r.startDate),
+      ...habitCompletions.map(c => c.date),
+    ];
+    const earliestStr = allDates.reduce((min, d) => (d < min ? d : min), allDates[0]);
     startDate = normDate(new Date(earliestStr));
     const spanDays = Math.ceil((todayNorm.getTime() - startDate.getTime()) / 86_400_000) + 1;
     isWeekly = spanDays > 60;
@@ -130,9 +147,11 @@ export function buildChartData(
   const endStr = toLocalDateString(todayNorm);
   const rangeRecords = records.filter(r => r.startDate >= startStr && r.startDate <= endStr);
 
+  const habitPtsPerDay = getHabitPointsPerDay(habitCompletions, startStr, endStr);
+
   const buckets = isWeekly
-    ? buildWeeklyBuckets(rangeRecords, startDate, todayNorm)
-    : buildDailyBuckets(rangeRecords, startDate, todayNorm, range === '7d');
+    ? buildWeeklyBuckets(rangeRecords, startDate, todayNorm, habitPtsPerDay)
+    : buildDailyBuckets(rangeRecords, startDate, todayNorm, range === '7d', habitPtsPerDay);
 
   // Only include vectors that have at least 1 minute in this range
   const usedIds = new Set<string>(
@@ -149,8 +168,14 @@ export function toPtsOptions(data: ChartData): EChartsCoreOption {
     grid: { left: 56, right: 16, top: 16, bottom: 64 },
     tooltip: {
       trigger: 'axis',
-      formatter: (params: any[]) =>
-        `${params[0].axisValue}<br/>Score: <b>${params[0].value} pts</b>`,
+      axisPointer: { type: 'shadow' },
+      formatter: (params: any[]) => {
+        const lines = params
+          .filter((p: any) => p.value > 0)
+          .map((p: any) => `${p.marker}${p.seriesName}: <b>${p.value} pts</b>`);
+        const total = params.reduce((s: number, p: any) => s + (p.value as number), 0);
+        return `${params[0].axisValue}<br/>${lines.join('<br/>')}<br/>Total: <b>${total} pts</b>`;
+      },
     },
     xAxis: {
       type: 'category',
@@ -158,12 +183,23 @@ export function toPtsOptions(data: ChartData): EChartsCoreOption {
       axisLabel: { rotate: 40, fontSize: 11 },
     },
     yAxis: { type: 'value', name: 'pts', nameTextStyle: { fontSize: 11 } },
+    legend: { bottom: 0, type: 'scroll', textStyle: { fontSize: 11 } },
     series: [
       {
+        name: 'Flow pts',
         type: 'bar',
+        stack: 'pts',
         data: buckets.map(b => b.score),
         barMinHeight: 1,
         itemStyle: { color: '#4FC3F7' },
+      },
+      {
+        name: 'Habit pts',
+        type: 'bar',
+        stack: 'pts',
+        data: buckets.map(b => b.habitPts),
+        barMinHeight: 1,
+        itemStyle: { color: '#81C784' },
       },
     ],
   };

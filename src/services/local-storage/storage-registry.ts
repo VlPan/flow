@@ -7,6 +7,7 @@ import { exchangeRecordsSchema } from '../../models/exchange-record.model';
 import { dailySpendingLogsSchema } from '../../models/daily-spending-log.model';
 import { redemptionsSchema } from '../../models/redemption.model';
 import { billsSchema } from '../../models/bill.model';
+import { habitGroupsSchema, habitsSchema, habitCompletionsSchema } from '../../models/habit.model';
 
 // Register all localStorage keys and their schemas here.
 // To add a new key: add an entry to this object.
@@ -34,6 +35,10 @@ export const STORAGE_REGISTRY = {
   balanceBasicDiscount: z.number(),
   // Bills
   bills: billsSchema,
+  // Habits
+  habitGroups: habitGroupsSchema,
+  habits: habitsSchema,
+  habitCompletions: habitCompletionsSchema,
 } satisfies Record<string, ZodType>;
 
 export type StorageRegistry = typeof STORAGE_REGISTRY;

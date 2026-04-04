@@ -1,0 +1,58 @@
+<h2 mat-dialog-title>{{ isEditMode ? 'Edit Habit' : 'Add Habit' }}</h2>
+
+<mat-dialog-content>
+  <form [formGroup]="form" class="habit-form-fields">
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Name</mat-label>
+      <input matInput formControlName="name" maxlength="100" />
+      @if (form.get('name')?.invalid && form.get('name')?.touched) {
+        <mat-error>Name is required</mat-error>
+      }
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Emoji (optional)</mat-label>
+      <input matInput formControlName="emoji" maxlength="4" />
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Group</mat-label>
+      <mat-select formControlName="groupId">
+        @for (group of groups; track group.id) {
+          <mat-option [value]="group.id">{{ group.name }}</mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Base points per completion</mat-label>
+      <input matInput type="number" formControlName="basePoints" min="1" step="1" />
+      @if (form.get('basePoints')?.invalid && form.get('basePoints')?.touched) {
+        <mat-error>Must be at least 1</mat-error>
+      }
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Frequency (times per week, 1–7)</mat-label>
+      <input matInput type="number" formControlName="frequency" min="1" max="7" step="1" />
+      @if (form.get('frequency')?.invalid && form.get('frequency')?.touched) {
+        <mat-error>Enter a value between 1 and 7</mat-error>
+      }
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Mastery reward points</mat-label>
+      <input matInput type="number" formControlName="masteryRewardPoints" min="1" step="1" />
+      @if (form.get('masteryRewardPoints')?.invalid && form.get('masteryRewardPoints')?.touched) {
+        <mat-error>Must be at least 1</mat-error>
+      }
+    </mat-form-field>
+  </form>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button (click)="cancel()">Cancel</button>
+  <button mat-flat-button (click)="save()" [disabled]="form.invalid">
+    {{ isEditMode ? 'Save' : 'Add' }}
+  </button>
+</mat-dialog-actions>
