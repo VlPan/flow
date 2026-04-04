@@ -39,27 +39,37 @@
               @for (habit of habitsForGroup(group.id); track habit.id) {
                 <div class="habit-row">
 
-                  <!-- LEFT: name + meta info -->
-                  <div class="flex items-center gap-2 flex-1 min-w-0 overflow-hidden">
-                    @if (habit.emoji) { <span class="shrink-0">{{ habit.emoji }}</span> }
-                    <span
-                      class="text-sm font-medium truncate"
-                      [title]="habit.name"
-                    >{{ habit.name }}</span>
-                    <span class="text-xs text-gray-400 shrink-0 whitespace-nowrap">
-                      ({{ habit.basePoints }}pts) {{ habits.weeklyCompletionCount(habit.id) }}/{{ habit.frequency }} done
-                    </span>
-                    <span
-                      class="shrink-0 text-sm whitespace-nowrap"
-                      [title]="'Streak: ' + habits.getSticks(habit.id) + '/7 (+' + habits.getSticks(habit.id) * 10 + '%)'"
-                    >🔥 {{ habits.getSticks(habit.id) }}</span>
-                    <span
-                      class="mastery-dot shrink-0"
-                      [class.mastery-low]="masteryPercent(habit) < 50"
-                      [class.mastery-mid]="masteryPercent(habit) >= 50 && masteryPercent(habit) < 80"
-                      [class.mastery-high]="masteryPercent(habit) >= 80"
-                      [title]="'Mastery: ' + masteryPercent(habit) + '%'"
-                    >{{ masteryPercent(habit) }}%</span>
+                  <!-- Checkbox: today's completion -->
+                  <mat-checkbox
+                    class="shrink-0"
+                    [checked]="habits.isCompleted(habit.id, today())"
+                    (change)="habits.toggleCompletion(habit.id, today())"
+                  ></mat-checkbox>
+
+                  <!-- LEFT: name + stats stacked -->
+                  <div class="flex flex-col min-w-0 flex-1">
+                    <!-- Line 1: emoji + name (truncated) -->
+                    <div class="flex items-center gap-1 min-w-0">
+                      @if (habit.emoji) { <span class="shrink-0 leading-none">{{ habit.emoji }}</span> }
+                      <span class="text-sm font-medium truncate" [title]="habit.name">{{ habit.name }}</span>
+                    </div>
+                    <!-- Line 2: pts + sticks + mastery -->
+                    <div class="flex items-center gap-2">
+                      <span class="text-xs text-gray-400 whitespace-nowrap">
+                        ({{ habit.basePoints }}pts) {{ habits.weeklyCompletionCount(habit.id) }}/{{ habit.frequency }} done
+                      </span>
+                      <span
+                        class="shrink-0 text-xs whitespace-nowrap"
+                        [title]="'Streak: ' + habits.getSticks(habit.id) + '/7 (+' + habits.getSticks(habit.id) * 10 + '%)'"
+                      >🔥 {{ habits.getSticks(habit.id) }}</span>
+                      <span
+                        class="mastery-dot shrink-0"
+                        [class.mastery-low]="masteryPercent(habit) < 50"
+                        [class.mastery-mid]="masteryPercent(habit) >= 50 && masteryPercent(habit) < 80"
+                        [class.mastery-high]="masteryPercent(habit) >= 80"
+                        [title]="'Mastery: ' + masteryPercent(habit) + '%'"
+                      >{{ masteryPercent(habit) }}%</span>
+                    </div>
                   </div>
 
                   <!-- RIGHT: day chips + actions -->

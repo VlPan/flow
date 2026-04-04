@@ -1,5 +1,6 @@
 import { Component, computed, inject } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
+import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatIconModule } from '@angular/material/icon';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { MatCardModule } from '@angular/material/card';
@@ -25,6 +26,7 @@ import { getLastNDays } from '../../utils/habit.utils';
   imports: [
     DecimalPipe,
     MatButtonModule,
+    MatCheckboxModule,
     MatIconModule,
     MatExpansionModule,
     MatCardModule,
@@ -41,6 +43,7 @@ export class HabitsPage {
   protected readonly othersGroupId = OTHERS_GROUP_ID;
 
   protected readonly last7Days = computed(() => getLastNDays(new Date(), 7));
+  protected readonly today = computed(() => getLastNDays(new Date(), 1)[0]);
 
   // Others group always last
   protected readonly sortedGroups = computed(() => {
