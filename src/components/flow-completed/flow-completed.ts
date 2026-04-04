@@ -3,6 +3,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { DateService } from '../../services/date/date.service';
 import { SessionService } from '../../services/session/session.service';
 import { FlowVectorsService } from '../../services/flow-vectors/flow-vectors.service';
+import { BalanceService } from '../../services/balance/balance.service';
 import { FlowCompletedRow } from '../flow-completed-row/flow-completed-row';
 import { ConfirmDialog } from '../confirm-dialog/confirm-dialog';
 import {
@@ -10,10 +11,14 @@ import {
   SessionCompleteDialogData,
   SessionCompleteDialogResult,
 } from '../session-complete-dialog/session-complete-dialog';
+import {
+  DeleteSessionDialog,
+  DeleteSessionDialogResult,
+} from '../delete-session-dialog/delete-session-dialog';
 import { SessionRecord } from '../../models/session.model';
 import { FlowVector } from '../../models/flow-vector.model';
 import { toLocalDateString } from '../../utils/date.utils';
-import { calculateDailyScore } from '../../utils/scoring.utils';
+import { calculateDailyScore, calculateSessionScore } from '../../utils/scoring.utils';
 
 @Component({
   selector: 'app-flow-completed',
@@ -26,6 +31,7 @@ export class FlowCompleted {
   private readonly sessionService = inject(SessionService);
   private readonly flowVectorsService = inject(FlowVectorsService);
   private readonly dateService = inject(DateService);
+  private readonly balanceService = inject(BalanceService);
   private readonly dialog = inject(MatDialog);
 
   private readonly vectorsMap = computed(() => {
@@ -73,14 +79,19 @@ export class FlowCompleted {
   }
 
   protected onDelete(record: SessionRecord): void {
+    const sessionPoints = calculateSessionScore(record.sessionMinutes, record.flowScore);
     this.dialog
-      .open(ConfirmDialog, {
-        width: '360px',
-        data: { message: 'Delete this session record?' },
+      .open(DeleteSessionDialog, {
+        width: '400px',
+        data: { sessionPoints },
       })
       .afterClosed()
-      .subscribe((confirmed: boolean) => {
-        if (confirmed) this.sessionService.deleteRecord(record.id);
+      .subscribe((result: DeleteSessionDialogResult | undefined) => {
+        if (!result) return;
+        if (result === 'remove-points') {
+          this.balanceService.removeSessionPoints(sessionPoints);
+        }
+        this.sessionService.deleteRecord(record.id);
       });
   }
 }

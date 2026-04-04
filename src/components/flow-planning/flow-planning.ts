@@ -17,10 +17,12 @@ import { PlanningRowService } from '../../services/planning-row/planning-row.ser
 import { FlowVectorsService } from '../../services/flow-vectors/flow-vectors.service';
 import { SessionService } from '../../services/session/session.service';
 import { SessionSettingsService } from '../../services/session-settings/session-settings.service';
+import { BalanceService } from '../../services/balance/balance.service';
 import { PlanningRow } from '../../models/planning-row.model';
 import { FlowVector, BREAK_VECTOR } from '../../models/flow-vector.model';
 import { SessionRecord } from '../../models/session.model';
 import { toLocalDateString } from '../../utils/date.utils';
+import { calculateSessionScore } from '../../utils/scoring.utils';
 
 @Component({
   selector: 'app-flow-planning',
@@ -35,6 +37,7 @@ export class FlowPlanning {
   protected readonly sessionSettings = inject(SessionSettingsService);
   private readonly planningRowService = inject(PlanningRowService);
   private readonly flowVectorsService = inject(FlowVectorsService);
+  private readonly balanceService = inject(BalanceService);
   private readonly dialog = inject(MatDialog);
 
   private readonly vectorsMap = computed(() => {
@@ -198,6 +201,9 @@ export class FlowPlanning {
             result.flowScore,
             result.shortDescription
           );
+          this.balanceService.addSessionPoints(
+            calculateSessionScore(result.sessionMinutes, result.flowScore)
+          );
         }
         this.sessionService.start(row);
       });
@@ -224,6 +230,9 @@ export class FlowPlanning {
         if (!result) return;
         const rowId = session.planningRowId;
         this.sessionService.complete(result.sessionMinutes, result.flowScore, result.shortDescription);
+        this.balanceService.addSessionPoints(
+          calculateSessionScore(result.sessionMinutes, result.flowScore)
+        );
         this.planningRowService.delete(rowId);
       });
   }

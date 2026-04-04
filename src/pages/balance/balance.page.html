@@ -1,1 +1,86 @@
-<h1>Balance</h1>
+<div class="balance-page">
+
+  <!-- Exchange Panel -->
+  <div class="exchange-panel">
+    <div class="balance-side">
+      <span class="balance-value">{{ balanceService.pointsBalance() | number: '1.0-0' }} P</span>
+      <div class="balance-adjust-btns">
+        <button mat-icon-button class="adjust-btn add-btn" (click)="adjustPoints('add')">
+          <mat-icon>add</mat-icon>
+        </button>
+        <button mat-icon-button class="adjust-btn remove-btn" (click)="adjustPoints('remove')">
+          <mat-icon>remove</mat-icon>
+        </button>
+      </div>
+    </div>
+
+    <div class="exchange-divider"></div>
+
+    <button mat-stroked-button class="exchange-btn" (click)="openExchangeDialog()">
+      <mat-icon>currency_exchange</mat-icon>
+      Exchange
+    </button>
+
+    <div class="exchange-divider"></div>
+
+    <div class="balance-side balance-side--right">
+      <div class="balance-adjust-btns">
+        <button mat-icon-button class="adjust-btn add-btn" (click)="adjustCurrency('add')">
+          <mat-icon>add</mat-icon>
+        </button>
+        <button mat-icon-button class="adjust-btn remove-btn" (click)="adjustCurrency('remove')">
+          <mat-icon>remove</mat-icon>
+        </button>
+      </div>
+      <span class="balance-value currency-value">
+        {{ balanceService.currencyBalance() | number: '1.2-2' }} {{ settings.currencySymbol() }}
+      </span>
+    </div>
+  </div>
+
+  <!-- Rewards Section -->
+  <div class="rewards-section">
+    <div class="section-header">
+      <h2 class="section-title">Rewards</h2>
+      <button mat-icon-button (click)="addReward()">
+        <mat-icon>add</mat-icon>
+      </button>
+    </div>
+
+    @if (balanceService.rewards().length === 0) {
+      <p class="empty-state">No rewards yet. Add one to get started.</p>
+    }
+
+    <div class="rewards-list">
+      @for (reward of balanceService.rewards(); track reward.id) {
+        <div class="reward-row">
+          <div
+            class="reward-fill"
+            [style.width.%]="balanceService.rewardFillPercent(reward)"
+          ></div>
+          <div class="reward-content">
+            @if (reward.emoji) {
+              <span class="reward-emoji">{{ reward.emoji }}</span>
+            }
+            <div class="reward-info">
+              <span class="reward-name">{{ reward.name }}</span>
+              <span class="reward-cost">
+                {{ reward.cost | number: '1.2-2' }} {{ settings.currencySymbol() }}
+              </span>
+            </div>
+            <div class="reward-actions">
+              <button mat-icon-button (click)="editReward(reward)">
+                <mat-icon>edit</mat-icon>
+              </button>
+              <button mat-icon-button (click)="deleteReward(reward)">
+                <mat-icon>delete</mat-icon>
+              </button>
+              <button mat-flat-button (click)="redeemReward(reward)">Redeem</button>
+            </div>
+          </div>
+        </div>
+      }
+    </div>
+  </div>
+
+</div>

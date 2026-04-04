@@ -1,0 +1,57 @@
+<div class="subpage">
+  <h2 class="subpage-title">Balance Settings</h2>
+  <p class="subpage-description">Configure your currency, exchange rate, and spending discount</p>
+
+  <div class="settings-list">
+    <div class="setting-row">
+      <div class="setting-info">
+        <span class="setting-label">Currency symbol</span>
+        <span class="setting-hint">Shown next to your currency balance (e.g. zł, €, $)</span>
+      </div>
+      <mat-form-field appearance="outline" class="symbol-field">
+        <input
+          matInput
+          [ngModel]="settingsService.currencySymbol()"
+          (ngModelChange)="settingsService.setCurrencySymbol($event)"
+          maxlength="4"
+        />
+      </mat-form-field>
+    </div>
+
+    <div class="setting-row">
+      <div class="setting-info">
+        <span class="setting-label">Exchange rate</span>
+        <span class="setting-hint">
+          1 Point = {{ settingsService.exchangeRate() }} {{ settingsService.currencySymbol() }}
+        </span>
+      </div>
+      <mat-form-field appearance="outline" class="rate-field">
+        <input
+          matInput
+          type="number"
+          min="0.0001"
+          step="0.01"
+          [ngModel]="settingsService.exchangeRate()"
+          (ngModelChange)="settingsService.setExchangeRate(+$event)"
+        />
+      </mat-form-field>
+    </div>
+
+    <div class="setting-row">
+      <div class="setting-info">
+        <span class="setting-label">Essential spending discount</span>
+        <span class="setting-hint">
+          You pay {{ settingsService.basicSpendingDiscount() }}% of essential spending
+          (food, transport, etc.). Non-essentials are always 100%.
+        </span>
+      </div>
+      <mat-slider min="0" max="100" step="5" [discrete]="true">
+        <input
+          matSliderThumb
+          [value]="settingsService.basicSpendingDiscount()"
+          (valueChange)="settingsService.setBasicSpendingDiscount($event)"
+        />
+      </mat-slider>
+    </div>
+  </div>
+</div>

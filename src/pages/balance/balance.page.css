@@ -1,0 +1,157 @@
+.balance-page {
+  padding: 24px;
+  max-width: 800px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+/* Exchange Panel */
+.exchange-panel {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 28px;
+  border: 1px solid var(--mat-sys-outline-variant);
+  border-radius: 16px;
+  background: var(--mat-sys-surface);
+  gap: 16px;
+}
+
+.exchange-divider {
+  width: 1px;
+  height: 48px;
+  background: var(--mat-sys-outline-variant);
+  flex-shrink: 0;
+}
+
+.balance-side {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+}
+
+.balance-side--right {
+  justify-content: flex-end;
+}
+
+.balance-value {
+  font: var(--mat-sys-title-large);
+  font-weight: 700;
+  color: var(--mat-sys-on-surface);
+  white-space: nowrap;
+}
+
+.currency-value {
+  color: var(--mat-sys-primary);
+}
+
+.balance-adjust-btns {
+  display: flex;
+  gap: 4px;
+}
+
+.adjust-btn {
+  border: 1.5px solid !important;
+}
+
+.add-btn {
+  color: var(--mat-sys-primary) !important;
+  border-color: var(--mat-sys-primary) !important;
+}
+
+.remove-btn {
+  color: var(--mat-sys-error) !important;
+  border-color: var(--mat-sys-error) !important;
+}
+
+.exchange-btn {
+  border-radius: 24px !important;
+  flex-shrink: 0;
+}
+
+/* Rewards Section */
+.section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.section-title {
+  font: var(--mat-sys-title-medium);
+  margin: 0;
+}
+
+.empty-state {
+  font: var(--mat-sys-body-medium);
+  color: var(--mat-sys-on-surface-variant);
+  text-align: center;
+  padding: 32px 0;
+}
+
+.rewards-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.reward-row {
+  position: relative;
+  border: 1px solid var(--mat-sys-outline-variant);
+  border-radius: 12px;
+  overflow: hidden;
+  background: var(--mat-sys-surface);
+}
+
+.reward-fill {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  background: color-mix(in srgb, var(--mat-sys-primary) 12%, transparent);
+  transition: width 0.4s ease;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.reward-content {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+}
+
+.reward-emoji {
+  font-size: 24px;
+  flex-shrink: 0;
+}
+
+.reward-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.reward-name {
+  font: var(--mat-sys-body-large);
+  font-weight: 500;
+}
+
+.reward-cost {
+  font: var(--mat-sys-body-small);
+  color: var(--mat-sys-on-surface-variant);
+}
+
+.reward-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+}

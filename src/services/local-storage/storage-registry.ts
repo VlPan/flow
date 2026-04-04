@@ -2,6 +2,10 @@ import { z, ZodType } from 'zod';
 import { flowVectorsSchema } from '../../models/flow-vector.model';
 import { planningRowsSchema } from '../../models/planning-row.model';
 import { activeSessionSchema, sessionRecordsSchema } from '../../models/session.model';
+import { rewardsSchema } from '../../models/reward.model';
+import { exchangeRecordsSchema } from '../../models/exchange-record.model';
+import { dailySpendingLogsSchema } from '../../models/daily-spending-log.model';
+import { redemptionsSchema } from '../../models/redemption.model';
 
 // Register all localStorage keys and their schemas here.
 // To add a new key: add an entry to this object.
@@ -14,6 +18,19 @@ export const STORAGE_REGISTRY = {
   sessionRecords: sessionRecordsSchema,
   sessionHidePassedTime: z.boolean(),
   sessionGoodMinutes: z.number(),
+  // Balance snapshots
+  pointsEarned: z.number(),
+  currencyBalance: z.number(),
+  // Balance audit trail (not used for computation)
+  rewards: rewardsSchema,
+  exchangeRecords: exchangeRecordsSchema,
+  dailySpendingLogs: dailySpendingLogsSchema,
+  redemptions: redemptionsSchema,
+  lastDailyLogDate: z.string().nullable(),
+  // Balance settings
+  balanceCurrencySymbol: z.string(),
+  balanceExchangeRate: z.number(),
+  balanceBasicDiscount: z.number(),
 } satisfies Record<string, ZodType>;
 
 export type StorageRegistry = typeof STORAGE_REGISTRY;

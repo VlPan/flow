@@ -18,6 +18,7 @@ export const routes: Routes = [
           { path: '', redirectTo: 'flow-vectors', pathMatch: 'full' },
           { path: 'flow-vectors', loadComponent: () => import('../pages/settings/flow-vectors/flow-vectors-settings.page').then(m => m.FlowVectorsSettingsPage) },
           { path: 'session-settings', loadComponent: () => import('../pages/settings/session-settings/session-settings.page').then(m => m.SessionSettingsPage) },
+          { path: 'balance-settings', loadComponent: () => import('../pages/settings/balance-settings/balance-settings.page').then(m => m.BalanceSettingsPage) },
         ],
       },
     ],
