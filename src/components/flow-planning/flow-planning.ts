@@ -3,6 +3,7 @@ import { DatePipe } from '@angular/common';
 import { MatDialog } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
+import { MatMenuModule } from '@angular/material/menu';
 import { DateService } from '../../services/date/date.service';
 import { WeeklyDatePicker } from '../weekly-date-picker/weekly-date-picker';
 import { FlowPlanningRow } from '../flow-planning-row/flow-planning-row';
@@ -27,7 +28,7 @@ import { calculateSessionScore } from '../../utils/scoring.utils';
 @Component({
   selector: 'app-flow-planning',
   standalone: true,
-  imports: [DatePipe, WeeklyDatePicker, FlowPlanningRow, MatIconModule, MatButtonModule],
+  imports: [DatePipe, WeeklyDatePicker, FlowPlanningRow, MatIconModule, MatButtonModule, MatMenuModule],
   templateUrl: './flow-planning.html',
   styleUrl: './flow-planning.css',
 })
@@ -62,10 +63,28 @@ export class FlowPlanning {
     });
   });
 
+  protected readonly isSelectedDayToday = computed(() =>
+    toLocalDateString(this.dateService.selectedDay()) === toLocalDateString(this.dateService.today)
+  );
+
   protected readonly quickPickVectors = computed(() => {
     if (this.sessionService.activeSession()) return [];
     return this.flowVectorsService.vectors();
   });
+
+  protected moveToNextDay(): void {
+    const selected = this.dateService.selectedDay();
+    const next = new Date(selected);
+    next.setDate(next.getDate() + 1);
+    this.planningRowService.moveToDate(toLocalDateString(selected), toLocalDateString(next));
+  }
+
+  protected moveToToday(): void {
+    this.planningRowService.moveToDate(
+      toLocalDateString(this.dateService.selectedDay()),
+      toLocalDateString(this.dateService.today)
+    );
+  }
 
   protected quickAdd(vector: FlowVector): void {
     this.planningRowService.create({

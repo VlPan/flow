@@ -25,9 +25,21 @@ app-weekly-date-picker {
   padding: 16px;
 }
 
+.day-label-row {
+  display: flex;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
 .day-label {
+  flex: 1;
   font: var(--mat-sys-title-medium);
-  margin: 0 0 16px;
+  margin: 0;
+}
+
+.day-menu-btn {
+  flex-shrink: 0;
+  margin: -8px -8px -8px 0;
 }
 
 .rows-list {

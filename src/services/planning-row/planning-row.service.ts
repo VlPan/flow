@@ -28,6 +28,13 @@ export class PlanningRowService {
     this.sync();
   }
 
+  moveToDate(fromDate: string, toDate: string): void {
+    this._rows.update(all =>
+      all.map(r => (r.createdDate === fromDate ? { ...r, createdDate: toDate } : r))
+    );
+    this.sync();
+  }
+
   private sync(): void {
     this.storage.set('planningRows', this._rows());
   }

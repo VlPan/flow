@@ -2,7 +2,26 @@
   <app-weekly-date-picker [isSessionActive]="sessionService.activeSession() !== null" />
 
   <div class="planning-content">
-    <h3 class="day-label">{{ dateService.selectedDay() | date: 'EEEE, MMMM d' }}</h3>
+    <div class="day-label-row">
+      <h3 class="day-label">{{ dateService.selectedDay() | date: 'EEEE, MMMM d' }}</h3>
+      @if (todayRows().length > 0) {
+        <button mat-icon-button [matMenuTriggerFor]="dayMenu" [disabled]="sessionService.activeSession() !== null" class="day-menu-btn">
+          <mat-icon>more_vert</mat-icon>
+        </button>
+        <mat-menu #dayMenu="matMenu">
+          <button mat-menu-item (click)="moveToNextDay()">
+            <mat-icon>arrow_forward</mat-icon>
+            Move to next day
+          </button>
+          @if (!isSelectedDayToday()) {
+            <button mat-menu-item (click)="moveToToday()">
+              <mat-icon>today</mat-icon>
+              Move to today
+            </button>
+          }
+        </mat-menu>
+      }
+    </div>
 
     <div class="rows-list">
       @for (row of todayRows(); track row.id) {
