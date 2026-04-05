@@ -166,7 +166,7 @@ export class HabitsService {
       const habit = this._habits().find(h => h.id === habitId);
       if (!habit || habit.isMastered) return;
 
-      const sticks = calculateSticks(habitId, this._completions(), habit, new Date());
+      const sticks = calculateSticks(habitId, this._completions(), habit, new Date(date + 'T00:00:00'));
       const pointsEarned = Math.round(habit.basePoints * (1 + sticks * 0.1));
 
       const completion: HabitCompletion = { id: uuidv4(), habitId, date, pointsEarned };
@@ -178,10 +178,10 @@ export class HabitsService {
     }
   }
 
-  getSticks(habitId: string): number {
+  getSticks(habitId: string, referenceDate?: Date): number {
     const habit = this._habits().find(h => h.id === habitId);
     if (!habit) return 0;
-    return calculateSticks(habitId, this._completions(), habit, new Date());
+    return calculateSticks(habitId, this._completions(), habit, referenceDate ?? new Date());
   }
 
   getMasteryProgress(habit: Habit): { percent: number; isMastered: boolean } {
@@ -201,7 +201,7 @@ export class HabitsService {
     if (!habit || habit.isMastered) return;
     if (this._completions().some(c => c.habitId === habitId && c.date === date)) return;
 
-    const sticks = calculateSticks(habitId, this._completions(), habit, new Date());
+    const sticks = calculateSticks(habitId, this._completions(), habit, new Date(date + 'T00:00:00'));
     const scoreMultiplier = getCompletionScoreMultiplier(completionScore);
     const pointsEarned = Math.round(habit.basePoints * scoreMultiplier * (1 + sticks * 0.1));
 

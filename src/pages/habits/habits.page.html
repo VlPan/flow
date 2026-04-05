@@ -2,8 +2,8 @@
 
   <mat-tab-group>
 
-    <!-- ── Active tab ── -->
-    <mat-tab label="Active">
+    <!-- ── Today tab ── -->
+    <mat-tab label="Today">
       <div class="flex flex-col gap-5 pt-4 p-2.5">
         <mat-accordion [multi]="true">
           @for (group of sortedGroups(); track group.id) {
@@ -69,8 +69,8 @@
                         [class.mastery-high]="masteryPercent(habit) >= 80"
                         [title]="'Mastery: ' + masteryPercent(habit) + '%'"
                       >{{ masteryPercent(habit) }}%</span>
-                      @if (todayScoreEmoji(habit.id)) {
-                        <span class="text-base leading-none shrink-0">{{ todayScoreEmoji(habit.id) }}</span>
+                      @if (scoreEmojiForDate(habit.id, today())) {
+                        <span class="text-base leading-none shrink-0">{{ scoreEmojiForDate(habit.id, today()) }}</span>
                       }
                     </div>
                   </div>
@@ -109,6 +109,84 @@
           <mat-icon>add</mat-icon>
           Add Group
         </button>
+      </div>
+    </mat-tab>
+
+    <!-- ── Yesterday tab ── -->
+    <mat-tab label="Yesterday">
+      <div class="flex flex-col gap-5 pt-4 p-2.5">
+        <mat-accordion [multi]="true">
+          @for (group of sortedGroups(); track group.id) {
+            <mat-expansion-panel expanded>
+              <mat-expansion-panel-header>
+                <mat-panel-title class="group-header">
+                  <span class="font-medium flex-1">{{ group.name }}</span>
+                </mat-panel-title>
+              </mat-expansion-panel-header>
+
+              @if (habitsForGroup(group.id).length === 0) {
+                <p class="text-sm text-gray-400 py-2">No habits in this group.</p>
+              }
+
+              @for (habit of habitsForGroup(group.id); track habit.id) {
+                <div class="habit-row">
+
+                  <!-- Checkbox: yesterday's completion -->
+                  <mat-checkbox
+                    class="shrink-0"
+                    [checked]="habits.isCompleted(habit.id, yesterday())"
+                    (change)="toggleHabitCompletion(habit, yesterday())"
+                  ></mat-checkbox>
+
+                  <!-- LEFT: name + stats stacked -->
+                  <div class="flex flex-col min-w-0 flex-1">
+                    <!-- Line 1: emoji + name (truncated) -->
+                    <div class="flex items-center gap-1 min-w-0">
+                      @if (habit.emoji) { <span class="shrink-0 leading-none">{{ habit.emoji }}</span> }
+                      <span class="text-sm font-medium truncate" [title]="habit.name">{{ habit.name }}</span>
+                    </div>
+                    <!-- Line 2: pts + sticks + mastery -->
+                    <div class="flex items-center gap-2">
+                      <span class="text-xs text-gray-400 whitespace-nowrap">
+                        ({{ habit.basePoints }}pts) {{ habits.weeklyCompletionCount(habit.id) }}/{{ habit.frequency }} done
+                      </span>
+                      <span
+                        class="shrink-0 text-xs whitespace-nowrap"
+                        [title]="'Streak: ' + habits.getSticks(habit.id) + '/7 (+' + habits.getSticks(habit.id) * 10 + '%)'"
+                      >🔥 {{ habits.getSticks(habit.id) }}</span>
+                      <span
+                        class="mastery-dot shrink-0"
+                        [class.mastery-low]="masteryPercent(habit) < 50"
+                        [class.mastery-mid]="masteryPercent(habit) >= 50 && masteryPercent(habit) < 80"
+                        [class.mastery-high]="masteryPercent(habit) >= 80"
+                        [title]="'Mastery: ' + masteryPercent(habit) + '%'"
+                      >{{ masteryPercent(habit) }}%</span>
+                      @if (scoreEmojiForDate(habit.id, yesterday())) {
+                        <span class="text-base leading-none shrink-0">{{ scoreEmojiForDate(habit.id, yesterday()) }}</span>
+                      }
+                    </div>
+                  </div>
+
+                  <!-- RIGHT: actions only (no day chips) -->
+                  <div class="flex items-center gap-1 shrink-0">
+                    <button mat-icon-button [matMenuTriggerFor]="habitMenuY">
+                      <mat-icon>more_vert</mat-icon>
+                    </button>
+                    <mat-menu #habitMenuY="matMenu">
+                      <button mat-menu-item (click)="editHabit(habit)">
+                        <mat-icon>edit</mat-icon> Edit
+                      </button>
+                      <button mat-menu-item (click)="deleteHabit(habit)">
+                        <mat-icon>delete</mat-icon> Delete
+                      </button>
+                    </mat-menu>
+                  </div>
+
+                </div>
+              }
+            </mat-expansion-panel>
+          }
+        </mat-accordion>
       </div>
     </mat-tab>
 

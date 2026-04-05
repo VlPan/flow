@@ -45,6 +45,7 @@ export class HabitsPage {
 
   protected readonly last7Days = computed(() => getLastNDays(new Date(), 7));
   protected readonly today = computed(() => getLastNDays(new Date(), 1)[0]);
+  protected readonly yesterday = computed(() => getLastNDays(new Date(), 2)[0]);
 
   // Others group always last
   protected readonly sortedGroups = computed(() => {
@@ -70,8 +71,8 @@ export class HabitsPage {
     return this.habits.getMasteryProgress(habit).percent;
   }
 
-  protected todayScoreEmoji(habitId: string): string | null {
-    const c = this.habits.getCompletion(habitId, this.today());
+  protected scoreEmojiForDate(habitId: string, date: string): string | null {
+    const c = this.habits.getCompletion(habitId, date);
     if (!c?.completionScore) return null;
     return getCompletionScoreEmoji(c.completionScore);
   }
