@@ -6,12 +6,16 @@
 }
 
 .padding-container {
+  display: flex;
+  flex-direction: column;
   height: 100%;
   padding: 10px;
+  overflow: hidden;
 }
 
 app-weekly-date-picker {
   margin-top: 10px;
+  flex-shrink: 0;
 }
 
 .planning-content {
