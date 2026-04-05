@@ -81,6 +81,17 @@
   background-color: var(--mat-sys-on-primary);
 }
 
+/* Session running: green dot on today (selected or not) */
+.day-btn.is-today.session-running::after {
+  content: '';
+  position: absolute;
+  bottom: 6px;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background-color: #4caf50;
+}
+
 /* Past (not selected) */
 .day-btn.is-past:not(.is-selected) {
   opacity: 0.45;

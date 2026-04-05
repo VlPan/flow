@@ -22,6 +22,7 @@ export const STORAGE_REGISTRY = {
   sessionRecords: sessionRecordsSchema,
   sessionHidePassedTime: z.boolean(),
   sessionGoodMinutes: z.number(),
+  sessionHideActiveBanner: z.boolean(),
   // Balance snapshots
   pointsEarned: z.number(),
   currencyBalance: z.number(),

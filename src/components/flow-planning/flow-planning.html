@@ -1,5 +1,5 @@
 <div class="padding-container">
-  <app-weekly-date-picker />
+  <app-weekly-date-picker [isSessionActive]="sessionService.activeSession() !== null" />
 
   <div class="planning-content">
     <h3 class="day-label">{{ dateService.selectedDay() | date: 'EEEE, MMMM d' }}</h3>
@@ -48,7 +48,7 @@
   </div>
 </div>
 
-@if (sessionService.activeSession()) {
+@if (sessionService.activeSession() && !sessionSettings.hideActiveBanner()) {
   <div class="active-banner" [class.paused]="sessionService.isPaused()">
     <span class="banner-icon">{{ activeBannerVector()?.icon }}</span>
     <div class="banner-text">

@@ -50,9 +50,16 @@ export class FlowPlanning {
 
   protected readonly todayRows = computed(() => {
     const date = toLocalDateString(this.dateService.selectedDay());
-    return this.planningRowService.rows().filter(
+    const rows = this.planningRowService.rows().filter(
       r => r.createdDate === date && this.vectorsMap().has(r.flowVectorId)
     );
+    const activeRowId = this.sessionService.activeSession()?.planningRowId;
+    if (!activeRowId) return rows;
+    return [...rows].sort((a, b) => {
+      if (a.id === activeRowId) return -1;
+      if (b.id === activeRowId) return 1;
+      return 0;
+    });
   });
 
   protected readonly quickPickVectors = computed(() => {

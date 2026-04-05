@@ -16,6 +16,17 @@
 
     <div class="setting-row">
       <div class="setting-info">
+        <span class="setting-label">Hide active session banner</span>
+        <span class="setting-hint">Hides the fixed banner at the bottom while a session is running</span>
+      </div>
+      <mat-slide-toggle
+        [checked]="settingsService.hideActiveBanner()"
+        (change)="settingsService.setHideActiveBanner($event.checked)"
+      />
+    </div>
+
+    <div class="setting-row">
+      <div class="setting-info">
         <span class="setting-label">Good session duration</span>
         <span class="setting-hint">Sessions reaching this length fill the progress bar and show in green ({{ settingsService.goodSessionMinutes() }} min)</span>
       </div>
