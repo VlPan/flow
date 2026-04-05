@@ -60,6 +60,11 @@
   color: #fff;
 }
 
+.day-chip-scored {
+  border-color: #90caf9;
+  color: #1976d2;
+}
+
 /* Mastered tab */
 .mastered-content {
   display: flex;

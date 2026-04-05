@@ -92,6 +92,29 @@ export function calculateMasteryProgress(
   return { percent: Math.round(percent), isMastered: actual >= threshold };
 }
 
+const COMPLETION_SCORE_MULTIPLIERS: Record<number, number> = {
+  1: 0.5,
+  2: 0.75,
+  3: 1.0,
+  4: 1.5,
+  5: 2.0,
+};
+
+/**
+ * Returns the points multiplier for a completion score (1–5).
+ */
+export function getCompletionScoreMultiplier(score: number): number {
+  return COMPLETION_SCORE_MULTIPLIERS[score] ?? 1.0;
+}
+
+/**
+ * Returns the emoji for a completion score (1–5).
+ */
+export function getCompletionScoreEmoji(score: number): string {
+  const emojis: Record<number, string> = { 1: '😞', 2: '😕', 3: '😐', 4: '😊', 5: '😁' };
+  return emojis[score] ?? '😐';
+}
+
 /**
  * Returns a map of date → total habit points earned on that date.
  */

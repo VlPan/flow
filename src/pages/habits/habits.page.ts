@@ -17,8 +17,9 @@ import {
   DeleteHabitDialogResult,
 } from '../../components/delete-habit-dialog/delete-habit-dialog';
 import { ClaimMasteryDialog } from '../../components/claim-mastery-dialog/claim-mastery-dialog';
+import { CompletionScoreDialog } from '../../components/completion-score-dialog/completion-score-dialog';
 import { Habit, HabitGroup } from '../../models/habit.model';
-import { getLastNDays } from '../../utils/habit.utils';
+import { getCompletionScoreEmoji, getLastNDays } from '../../utils/habit.utils';
 
 @Component({
   selector: 'app-habits-page',
@@ -67,6 +68,31 @@ export class HabitsPage {
 
   protected masteryPercent(habit: Habit): number {
     return this.habits.getMasteryProgress(habit).percent;
+  }
+
+  protected todayScoreEmoji(habitId: string): string | null {
+    const c = this.habits.getCompletion(habitId, this.today());
+    if (!c?.completionScore) return null;
+    return getCompletionScoreEmoji(c.completionScore);
+  }
+
+  protected toggleHabitCompletion(habit: Habit, date: string): void {
+    if (this.habits.isCompleted(habit.id, date)) {
+      this.habits.toggleCompletion(habit.id, date);
+      return;
+    }
+    if (!habit.withCompletionScore) {
+      this.habits.toggleCompletion(habit.id, date);
+      return;
+    }
+    this.dialog
+      .open(CompletionScoreDialog, { width: '480px' })
+      .afterClosed()
+      .subscribe((score: number | undefined) => {
+        if (score !== undefined) {
+          this.habits.completeWithScore(habit.id, date, score);
+        }
+      });
   }
 
   private totalHabitPoints(habitId: string): number {

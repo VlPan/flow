@@ -7,6 +7,7 @@ import { Habit, HabitCompletion, HabitGroup } from '../../models/habit.model';
 import {
   calculateMasteryProgress,
   calculateSticks,
+  getCompletionScoreMultiplier,
   getHabitPointsPerDay,
   getLastNDays,
 } from '../../utils/habit.utils';
@@ -189,6 +190,27 @@ export class HabitsService {
 
   isCompleted(habitId: string, date: string): boolean {
     return this._completions().some(c => c.habitId === habitId && c.date === date);
+  }
+
+  getCompletion(habitId: string, date: string): HabitCompletion | undefined {
+    return this._completions().find(c => c.habitId === habitId && c.date === date);
+  }
+
+  completeWithScore(habitId: string, date: string, completionScore: number): void {
+    const habit = this._habits().find(h => h.id === habitId);
+    if (!habit || habit.isMastered) return;
+    if (this._completions().some(c => c.habitId === habitId && c.date === date)) return;
+
+    const sticks = calculateSticks(habitId, this._completions(), habit, new Date());
+    const scoreMultiplier = getCompletionScoreMultiplier(completionScore);
+    const pointsEarned = Math.round(habit.basePoints * scoreMultiplier * (1 + sticks * 0.1));
+
+    const completion: HabitCompletion = { id: uuidv4(), habitId, date, pointsEarned, completionScore };
+    this._completions.update(all => [...all, completion]);
+    this.storage.set('habitCompletions', this._completions());
+
+    this.balance.addSessionPoints(pointsEarned);
+    this.evaluateMastery(habitId);
   }
 
   weeklyCompletionCount(habitId: string): number {

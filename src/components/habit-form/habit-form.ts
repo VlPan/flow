@@ -5,6 +5,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatButtonModule } from '@angular/material/button';
+import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { Habit, HabitGroup } from '../../models/habit.model';
 
 export interface HabitFormData {
@@ -23,8 +24,10 @@ export interface HabitFormData {
     MatInputModule,
     MatSelectModule,
     MatButtonModule,
+    MatSlideToggleModule,
   ],
   templateUrl: './habit-form.html',
+  styles: [`.toggle-row { padding: 4px 0 12px; }`],
 })
 export class HabitForm {
   private readonly fb = inject(FormBuilder);
@@ -50,6 +53,7 @@ export class HabitForm {
       this.data.habit?.masteryRewardPoints ?? 100,
       [Validators.required, Validators.min(1)],
     ],
+    withCompletionScore: [this.data.habit?.withCompletionScore ?? false],
   });
 
   protected save(): void {
@@ -62,6 +66,7 @@ export class HabitForm {
       basePoints: raw.basePoints!,
       frequency: raw.frequency!,
       masteryRewardPoints: raw.masteryRewardPoints!,
+      withCompletionScore: raw.withCompletionScore ?? false,
     });
   }
 

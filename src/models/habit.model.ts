@@ -20,6 +20,7 @@ export const habitSchema = z.object({
   masteryRewardClaimed: z.boolean(),
   isMastered: z.boolean(),
   createdDate: z.string(), // YYYY-MM-DD
+  withCompletionScore: z.boolean().optional(),
 });
 
 export const habitsSchema = z.array(habitSchema);
@@ -30,6 +31,7 @@ export const habitCompletionSchema = z.object({
   habitId: z.string(),
   date: z.string(), // YYYY-MM-DD — the date the habit was performed
   pointsEarned: z.number(),
+  completionScore: z.number().min(1).max(5).optional(),
 });
 
 export const habitCompletionsSchema = z.array(habitCompletionSchema);
