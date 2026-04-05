@@ -1,12 +1,15 @@
 import { Component, inject } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
+import { MAT_DIALOG_DATA, MatDialog, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { Habit, HabitGroup } from '../../models/habit.model';
+import { HabitsService } from '../../services/habits/habits.service';
+import { ConfirmDialog } from '../confirm-dialog/confirm-dialog';
 
 export interface HabitFormData {
   habit: Habit | null;
@@ -24,6 +27,7 @@ export interface HabitFormData {
     MatInputModule,
     MatSelectModule,
     MatButtonModule,
+    MatIconModule,
     MatSlideToggleModule,
   ],
   templateUrl: './habit-form.html',
@@ -32,6 +36,8 @@ export interface HabitFormData {
 export class HabitForm {
   private readonly fb = inject(FormBuilder);
   private readonly dialogRef = inject(MatDialogRef<HabitForm>);
+  private readonly matDialog = inject(MatDialog);
+  private readonly habitsService = inject(HabitsService);
   protected readonly data = inject<HabitFormData>(MAT_DIALOG_DATA);
 
   protected readonly isEditMode = !!this.data.habit;
@@ -72,5 +78,19 @@ export class HabitForm {
 
   protected cancel(): void {
     this.dialogRef.close(undefined);
+  }
+
+  protected resetProgress(): void {
+    this.matDialog
+      .open(ConfirmDialog, {
+        data: {
+          message: `Reset all progress for "${this.data.habit!.name}"? All completions will be deleted.`,
+          confirmLabel: 'Reset',
+        },
+      })
+      .afterClosed()
+      .subscribe((confirmed: boolean) => {
+        if (confirmed) this.habitsService.resetProgress(this.data.habit!.id);
+      });
   }
 }

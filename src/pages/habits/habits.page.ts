@@ -53,6 +53,10 @@ export class HabitsPage {
     return [...all.filter(g => g.id !== OTHERS_GROUP_ID), ...all.filter(g => g.id === OTHERS_GROUP_ID)];
   });
 
+  protected readonly sortedGroupsForArchive = computed(() =>
+    this.sortedGroups().filter(g => (this.habits.archivedHabitsByGroup()[g.id] ?? []).length > 0),
+  );
+
   protected dayLabel(dateStr: string): string {
     const date = new Date(dateStr + 'T00:00:00');
     return date.toLocaleDateString('en', { weekday: 'short' }) + ' ' + date.getDate();
@@ -65,6 +69,10 @@ export class HabitsPage {
 
   protected habitsForGroup(groupId: string): Habit[] {
     return this.habits.habitsByGroup()[groupId] ?? [];
+  }
+
+  protected archivedHabitsForGroup(groupId: string): Habit[] {
+    return this.habits.archivedHabitsByGroup()[groupId] ?? [];
   }
 
   protected masteryPercent(habit: Habit): number {
@@ -162,6 +170,15 @@ export class HabitsPage {
 
   protected deleteHabit(habit: Habit): void {
     const pointsEarned = this.totalHabitPoints(habit.id);
+    if (pointsEarned === 0) {
+      this.dialog
+        .open(ConfirmDialog, { data: { message: `Delete "${habit.name}"?` } })
+        .afterClosed()
+        .subscribe((confirmed: boolean) => {
+          if (confirmed) this.habits.deleteHabit(habit.id, true);
+        });
+      return;
+    }
     this.dialog
       .open(DeleteHabitDialog, {
         data: { habitName: habit.name, pointsEarned },
@@ -170,6 +187,26 @@ export class HabitsPage {
       .afterClosed()
       .subscribe((result: DeleteHabitDialogResult | undefined) => {
         if (result) this.habits.deleteHabit(habit.id, result === 'keep-points');
+      });
+  }
+
+  protected archiveHabit(habit: Habit): void {
+    this.habits.archiveHabit(habit.id);
+  }
+
+  protected unarchiveHabit(habit: Habit): void {
+    this.habits.unarchiveHabit(habit.id);
+  }
+
+  protected addHabitToArchive(): void {
+    this.dialog
+      .open(HabitForm, {
+        data: { habit: null, groups: this.habits.groups() },
+        width: '440px',
+      })
+      .afterClosed()
+      .subscribe((result: any) => {
+        if (result) this.habits.addHabit(result, true);
       });
   }
 

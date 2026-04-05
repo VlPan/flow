@@ -19,6 +19,7 @@ export const habitSchema = z.object({
   masteryRewardPoints: z.number(),
   masteryRewardClaimed: z.boolean(),
   isMastered: z.boolean(),
+  isArchived: z.boolean().default(false),
   createdDate: z.string(), // YYYY-MM-DD
   withCompletionScore: z.boolean().optional(),
 });

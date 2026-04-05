@@ -93,6 +93,9 @@
                       <button mat-menu-item (click)="editHabit(habit)">
                         <mat-icon>edit</mat-icon> Edit
                       </button>
+                      <button mat-menu-item (click)="archiveHabit(habit)">
+                        <mat-icon>archive</mat-icon> Archive
+                      </button>
                       <button mat-menu-item (click)="deleteHabit(habit)">
                         <mat-icon>delete</mat-icon> Delete
                       </button>
@@ -176,6 +179,9 @@
                       <button mat-menu-item (click)="editHabit(habit)">
                         <mat-icon>edit</mat-icon> Edit
                       </button>
+                      <button mat-menu-item (click)="archiveHabit(habit)">
+                        <mat-icon>archive</mat-icon> Archive
+                      </button>
                       <button mat-menu-item (click)="deleteHabit(habit)">
                         <mat-icon>delete</mat-icon> Delete
                       </button>
@@ -222,12 +228,85 @@
                       <mat-icon>undo</mat-icon>
                       Un-master
                     </button>
+                    <button mat-button (click)="archiveHabit(habit)">
+                      <mat-icon>archive</mat-icon>
+                      Archive
+                    </button>
                   </div>
                 </mat-card-content>
               </mat-card>
             }
           </div>
         }
+      </div>
+    </mat-tab>
+
+    <!-- ── Archive tab ── -->
+    <mat-tab>
+      <ng-template mat-tab-label>Archive ({{ habits.archivedHabits().length }})</ng-template>
+      <div class="flex flex-col gap-5 pt-4 p-2.5">
+
+        <button mat-stroked-button class="self-start" (click)="addHabitToArchive()">
+          <mat-icon>add</mat-icon>
+          Add Habit to Archive
+        </button>
+
+        @if (habits.archivedHabits().length === 0) {
+          <p class="text-gray-400 text-center py-10">No archived habits. Archive habits to reduce clutter or plan ahead.</p>
+        } @else {
+          <mat-accordion [multi]="true">
+            @for (group of sortedGroupsForArchive(); track group.id) {
+              <mat-expansion-panel expanded>
+                <mat-expansion-panel-header>
+                  <mat-panel-title class="group-header">
+                    <span class="font-medium flex-1">{{ group.name }}</span>
+                  </mat-panel-title>
+                </mat-expansion-panel-header>
+
+                @for (habit of archivedHabitsForGroup(group.id); track habit.id) {
+                  <div class="habit-row">
+
+                    <!-- LEFT: name + stats stacked -->
+                    <div class="flex flex-col min-w-0 flex-1">
+                      <div class="flex items-center gap-1 min-w-0">
+                        @if (habit.emoji) { <span class="shrink-0 leading-none">{{ habit.emoji }}</span> }
+                        <span class="text-sm font-medium truncate" [title]="habit.name">{{ habit.name }}</span>
+                      </div>
+                      <div class="flex items-center gap-2">
+                        <span class="text-xs text-gray-400 whitespace-nowrap">
+                          ({{ habit.basePoints }}pts) {{ habit.frequency }}×/wk
+                        </span>
+                        @if (habit.isMastered) {
+                          <mat-icon class="trophy-icon" style="font-size:14px;width:14px;height:14px">emoji_events</mat-icon>
+                        }
+                      </div>
+                    </div>
+
+                    <!-- RIGHT: actions -->
+                    <div class="flex items-center gap-1 shrink-0">
+                      <button mat-icon-button [matMenuTriggerFor]="habitMenuA">
+                        <mat-icon>more_vert</mat-icon>
+                      </button>
+                      <mat-menu #habitMenuA="matMenu">
+                        <button mat-menu-item (click)="unarchiveHabit(habit)">
+                          <mat-icon>unarchive</mat-icon> Unarchive
+                        </button>
+                        <button mat-menu-item (click)="editHabit(habit)">
+                          <mat-icon>edit</mat-icon> Edit
+                        </button>
+                        <button mat-menu-item (click)="deleteHabit(habit)">
+                          <mat-icon>delete</mat-icon> Delete
+                        </button>
+                      </mat-menu>
+                    </div>
+
+                  </div>
+                }
+              </mat-expansion-panel>
+            }
+          </mat-accordion>
+        }
+
       </div>
     </mat-tab>
 

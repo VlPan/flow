@@ -36,12 +36,22 @@ export class HabitsService {
   readonly habits = this._habits.asReadonly();
   readonly completions = this._completions.asReadonly();
 
-  readonly activeHabits = computed(() => this._habits().filter(h => !h.isMastered));
-  readonly masteredHabits = computed(() => this._habits().filter(h => h.isMastered));
+  readonly activeHabits = computed(() => this._habits().filter(h => !h.isMastered && !h.isArchived));
+  readonly masteredHabits = computed(() => this._habits().filter(h => h.isMastered && !h.isArchived));
+  readonly archivedHabits = computed(() => this._habits().filter(h => h.isArchived));
 
   readonly habitsByGroup = computed(() => {
     const map: Record<string, Habit[]> = {};
     for (const h of this.activeHabits()) {
+      if (!map[h.groupId]) map[h.groupId] = [];
+      map[h.groupId].push(h);
+    }
+    return map;
+  });
+
+  readonly archivedHabitsByGroup = computed(() => {
+    const map: Record<string, Habit[]> = {};
+    for (const h of this.archivedHabits()) {
       if (!map[h.groupId]) map[h.groupId] = [];
       map[h.groupId].push(h);
     }
@@ -117,12 +127,16 @@ export class HabitsService {
 
   // ── Habits ─────────────────────────────────────────────────────────────────
 
-  addHabit(data: Omit<Habit, 'id' | 'isMastered' | 'masteryRewardClaimed' | 'createdDate'>): void {
+  addHabit(
+    data: Omit<Habit, 'id' | 'isMastered' | 'masteryRewardClaimed' | 'createdDate' | 'isArchived'>,
+    isArchived = false,
+  ): void {
     const habit: Habit = {
       ...data,
       id: uuidv4(),
       isMastered: false,
       masteryRewardClaimed: false,
+      isArchived,
       createdDate: toLocalDateString(new Date()),
     };
     this._habits.update(all => [...all, habit]);
@@ -220,6 +234,20 @@ export class HabitsService {
     return this._completions().filter(
       c => c.habitId === habitId && c.date >= weekStartStr && c.date <= todayStr,
     ).length;
+  }
+
+  archiveHabit(id: string): void {
+    this.updateHabit(id, { isArchived: true });
+  }
+
+  unarchiveHabit(id: string): void {
+    this.updateHabit(id, { isArchived: false });
+  }
+
+  resetProgress(id: string): void {
+    this._completions.update(all => all.filter(c => c.habitId !== id));
+    this.storage.set('habitCompletions', this._completions());
+    this.updateHabit(id, { isMastered: false });
   }
 
   // ── Mastery ────────────────────────────────────────────────────────────────

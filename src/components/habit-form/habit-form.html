@@ -57,6 +57,12 @@
 </mat-dialog-content>
 
 <mat-dialog-actions align="end">
+  @if (isEditMode) {
+    <button mat-button color="warn" (click)="resetProgress()" style="margin-right: auto">
+      <mat-icon>restart_alt</mat-icon>
+      Reset Progress
+    </button>
+  }
   <button mat-button (click)="cancel()">Cancel</button>
   <button mat-flat-button (click)="save()" [disabled]="form.invalid">
     {{ isEditMode ? 'Save' : 'Add' }}
