@@ -21,6 +21,7 @@ export const routes: Routes = [
           { path: 'session-settings', loadComponent: () => import('../pages/settings/session-settings/session-settings.page').then(m => m.SessionSettingsPage) },
           { path: 'balance-settings', loadComponent: () => import('../pages/settings/balance-settings/balance-settings.page').then(m => m.BalanceSettingsPage) },
           { path: 'categories', loadComponent: () => import('../pages/settings/categories/categories-settings.page').then(m => m.CategoriesSettingsPage) },
+          { path: 'data', loadComponent: () => import('../pages/settings/data/data-settings.page').then(m => m.DataSettingsPage) },
         ],
       },
     ],

@@ -1,0 +1,19 @@
+<div class="data-page">
+  <div class="section">
+    <p class="section-title">Export</p>
+    <p class="description">Copy all app data as JSON to your clipboard for backup or inspection.</p>
+    <button mat-flat-button (click)="copyToClipboard()">
+      <mat-icon>{{ copied() ? 'check' : 'content_copy' }}</mat-icon>
+      {{ copied() ? 'Copied!' : 'Copy data to clipboard' }}
+    </button>
+  </div>
+
+  <div class="section">
+    <p class="section-title">Import</p>
+    <p class="description">Paste previously exported JSON from clipboard to restore your data. This will overwrite existing data.</p>
+    <button mat-stroked-button color="warn" (click)="importFromClipboard()">
+      <mat-icon>upload</mat-icon>
+      Import from clipboard
+    </button>
+  </div>
+</div>
