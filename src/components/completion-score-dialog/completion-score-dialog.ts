@@ -1,6 +1,5 @@
 import { Component, HostListener, inject, signal } from '@angular/core';
 import { MatDialogModule, MatDialogRef } from '@angular/material/dialog';
-import { MatButtonModule } from '@angular/material/button';
 
 const SCORES: { value: number; emoji: string; label: string }[] = [
   { value: 1, emoji: '😞', label: 'Bad' },
@@ -13,7 +12,7 @@ const SCORES: { value: number; emoji: string; label: string }[] = [
 @Component({
   selector: 'app-completion-score-dialog',
   standalone: true,
-  imports: [MatDialogModule, MatButtonModule],
+  imports: [MatDialogModule],
   template: `
     <h2 mat-dialog-title>Rate your Habit</h2>
     <mat-dialog-content>
@@ -31,9 +30,6 @@ const SCORES: { value: number; emoji: string; label: string }[] = [
         }
       </div>
     </mat-dialog-content>
-    <mat-dialog-actions align="end">
-      <button mat-flat-button (click)="confirm()">Confirm</button>
-    </mat-dialog-actions>
   `,
   styles: [`
     mat-dialog-content {
@@ -95,6 +91,7 @@ export class CompletionScoreDialog {
 
   protected select(value: number): void {
     this.selected.set(value);
+    this.confirm();
   }
 
   protected confirm(): void {
@@ -106,6 +103,7 @@ export class CompletionScoreDialog {
     const n = parseInt(event.key, 10);
     if (n >= 1 && n <= 5) {
       this.selected.set(n);
+      this.confirm();
     } else if (event.key === 'Enter') {
       event.preventDefault();
       this.confirm();

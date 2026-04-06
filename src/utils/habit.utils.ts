@@ -75,7 +75,7 @@ export function calculateMasteryProgress(
   );
 
   const windowDays = Math.min(daysSinceCreation, 120);
-  if (windowDays <= 0) return { percent: 0, isMastered: false };
+  if (windowDays < 60) return { percent: 0, isMastered: false };
 
   const windowStart = addDays(todayMidnight, -windowDays);
   const windowStartStr = toLocalDateString(windowStart);
