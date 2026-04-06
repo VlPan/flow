@@ -2,13 +2,14 @@ import { Component, input, output } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { MatMenuModule } from '@angular/material/menu';
+import { CdkDragHandle } from '@angular/cdk/drag-drop';
 import { PlanningRow } from '../../models/planning-row.model';
 import { FlowVector } from '../../models/flow-vector.model';
 
 @Component({
   selector: 'app-flow-planning-row',
   standalone: true,
-  imports: [MatIconModule, MatButtonModule, MatMenuModule],
+  imports: [MatIconModule, MatButtonModule, MatMenuModule, CdkDragHandle],
   templateUrl: './flow-planning-row.html',
   styleUrl: './flow-planning-row.css',
 })

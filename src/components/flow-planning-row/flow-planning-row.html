@@ -8,6 +8,11 @@
     <div class="fill-bar" [style.width.%]="fillPercent()"></div>
   }
 
+  @if (!isAnySessionActive()) {
+    <span class="drag-handle" cdkDragHandle>
+      <mat-icon>drag_indicator</mat-icon>
+    </span>
+  }
   <span class="vector-icon">{{ vector().icon }}</span>
   <div class="row-text">
     <span class="vector-name" [style.color]="vector().color">{{ vector().name }}</span>

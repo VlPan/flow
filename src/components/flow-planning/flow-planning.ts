@@ -1,6 +1,7 @@
 import { Component, computed, inject } from '@angular/core';
 import { DatePipe } from '@angular/common';
 import { MatDialog } from '@angular/material/dialog';
+import { CdkDropList, CdkDrag, CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { MatMenuModule } from '@angular/material/menu';
@@ -28,7 +29,7 @@ import { calculateSessionScore } from '../../utils/scoring.utils';
 @Component({
   selector: 'app-flow-planning',
   standalone: true,
-  imports: [DatePipe, WeeklyDatePicker, FlowPlanningRow, MatIconModule, MatButtonModule, MatMenuModule],
+  imports: [DatePipe, WeeklyDatePicker, FlowPlanningRow, MatIconModule, MatButtonModule, MatMenuModule, CdkDropList, CdkDrag],
   templateUrl: './flow-planning.html',
   styleUrl: './flow-planning.css',
 })
@@ -118,6 +119,13 @@ export class FlowPlanning {
 
   protected isRowActive(row: PlanningRow): boolean {
     return this.sessionService.activeSession()?.planningRowId === row.id;
+  }
+
+  protected onDrop(event: CdkDragDrop<PlanningRow[]>): void {
+    if (event.previousIndex === event.currentIndex) return;
+    const rows = [...this.todayRows()];
+    moveItemInArray(rows, event.previousIndex, event.currentIndex);
+    this.planningRowService.reorder(rows.map(r => r.id));
   }
 
   protected openAddDialog(): void {

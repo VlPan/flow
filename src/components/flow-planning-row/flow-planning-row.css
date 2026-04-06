@@ -56,11 +56,26 @@
 }
 
 /* Ensure content sits above the fill-bar */
+.drag-handle,
 .vector-icon,
 .row-text,
 .menu-btn {
   position: relative;
   z-index: 1;
+}
+
+.drag-handle {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  cursor: grab;
+  color: var(--mat-sys-on-surface-variant);
+  opacity: 0.5;
+  margin-left: -4px;
+}
+
+.drag-handle:active {
+  cursor: grabbing;
 }
 
 .vector-icon {

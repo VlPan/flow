@@ -23,9 +23,11 @@
       }
     </div>
 
-    <div class="rows-list">
+    <div class="rows-list" cdkDropList (cdkDropListDropped)="onDrop($event)">
       @for (row of todayRows(); track row.id) {
         <app-flow-planning-row
+          cdkDrag
+          [cdkDragDisabled]="sessionService.activeSession() !== null"
           [row]="row"
           [vector]="vectorFor(row)"
           [isActive]="isRowActive(row)"

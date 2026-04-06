@@ -115,6 +115,19 @@ app-weekly-date-picker {
   white-space: nowrap;
 }
 
+/* CDK Drag & Drop */
+:host ::ng-deep .cdk-drag-placeholder {
+  opacity: 0;
+}
+
+:host ::ng-deep .cdk-drag-animating {
+  transition: transform 200ms ease;
+}
+
+.rows-list.cdk-drop-list-dragging app-flow-planning-row:not(.cdk-drag-placeholder) {
+  transition: transform 200ms ease;
+}
+
 /* Active session banner — pinned to bottom */
 .active-banner {
   flex-shrink: 0;

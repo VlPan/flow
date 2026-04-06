@@ -35,6 +35,27 @@ export class PlanningRowService {
     this.sync();
   }
 
+  reorder(orderedIds: string[]): void {
+    this._rows.update(all => {
+      const idSet = new Set(orderedIds);
+      const byId = new Map(all.map(r => [r.id, r]));
+      const reordered = orderedIds.map(id => byId.get(id)!);
+      let insertionDone = false;
+      const result: PlanningRow[] = [];
+      for (const row of all) {
+        if (!idSet.has(row.id)) {
+          result.push(row);
+        } else if (!insertionDone) {
+          result.push(...reordered);
+          insertionDone = true;
+        }
+      }
+      if (!insertionDone) result.push(...reordered);
+      return result;
+    });
+    this.sync();
+  }
+
   private sync(): void {
     this.storage.set('planningRows', this._rows());
   }
