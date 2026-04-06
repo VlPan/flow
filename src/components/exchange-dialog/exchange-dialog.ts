@@ -41,12 +41,12 @@ export interface ExchangeDialogData {
       }
     </mat-dialog-content>
     <mat-dialog-actions class="exchange-actions">
-      <button mat-button (click)="dialogRef.close()">Cancel</button>
+      <button type="button" mat-button (click)="dialogRef.close()">Cancel</button>
       <div class="right-actions">
-        <button mat-button (click)="exchangeAll()">
+        <button type="button" mat-button (click)="exchangeAll()">
           Exchange All ({{ data.availablePoints }} P)
         </button>
-        <button mat-flat-button (click)="confirm()" [disabled]="amount() <= 0">Exchange</button>
+        <button type="button" mat-flat-button (click)="confirm()" [disabled]="amount() <= 0">Exchange</button>
       </div>
     </mat-dialog-actions>
   `,
@@ -81,7 +81,7 @@ export class ExchangeDialog {
   protected readonly amount = signal(0);
 
   protected exchangeAll(): void {
-    this.amount.set(this.data.availablePoints);
+    this.dialogRef.close(this.data.availablePoints);
   }
 
   protected confirm(): void {
