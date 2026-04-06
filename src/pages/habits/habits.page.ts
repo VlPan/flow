@@ -1,4 +1,4 @@
-import { Component, computed, inject } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatIconModule } from '@angular/material/icon';
@@ -8,6 +8,7 @@ import { MatMenuModule } from '@angular/material/menu';
 import { MatTabsModule } from '@angular/material/tabs';
 import { MatDialog } from '@angular/material/dialog';
 import { DecimalPipe } from '@angular/common';
+import { CdkDropList, CdkDrag, CdkDragHandle, CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
 import { HabitsService, OTHERS_GROUP_ID } from '../../services/habits/habits.service';
 import { ConfirmDialog } from '../../components/confirm-dialog/confirm-dialog';
 import { HabitGroupForm } from '../../components/habit-group-form/habit-group-form';
@@ -33,6 +34,9 @@ import { getCompletionScoreEmoji, getLastNDays } from '../../utils/habit.utils';
     MatCardModule,
     MatMenuModule,
     MatTabsModule,
+    CdkDropList,
+    CdkDrag,
+    CdkDragHandle,
   ],
   templateUrl: './habits.page.html',
   styleUrl: './habits.page.css',
@@ -42,6 +46,7 @@ export class HabitsPage {
   private readonly dialog = inject(MatDialog);
 
   protected readonly othersGroupId = OTHERS_GROUP_ID;
+  protected readonly reorderingGroupId = signal<string | null>(null);
 
   protected readonly last7Days = computed(() => getLastNDays(new Date(), 7));
   protected readonly today = computed(() => getLastNDays(new Date(), 1)[0]);
@@ -109,6 +114,23 @@ export class HabitsPage {
       .completions()
       .filter(c => c.habitId === habitId)
       .reduce((sum, c) => sum + c.pointsEarned, 0);
+  }
+
+  // ── Reorder ──────────────────────────────────────────────────────────────────
+
+  protected startReorder(groupId: string): void {
+    this.reorderingGroupId.set(groupId);
+  }
+
+  protected stopReorder(): void {
+    this.reorderingGroupId.set(null);
+  }
+
+  protected onDrop(event: CdkDragDrop<unknown>, groupId: string): void {
+    if (event.previousIndex === event.currentIndex) return;
+    const habits = [...this.habitsForGroup(groupId)];
+    moveItemInArray(habits, event.previousIndex, event.currentIndex);
+    this.habits.reorder(groupId, habits.map(h => h.id));
   }
 
   // ── Groups ──────────────────────────────────────────────────────────────────

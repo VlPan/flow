@@ -236,6 +236,27 @@ export class HabitsService {
     ).length;
   }
 
+  reorder(groupId: string, orderedIds: string[]): void {
+    this._habits.update(all => {
+      const idSet = new Set(orderedIds);
+      const byId = new Map(all.map(h => [h.id, h]));
+      const reordered = orderedIds.map(id => byId.get(id)!);
+      let insertionDone = false;
+      const result: Habit[] = [];
+      for (const habit of all) {
+        if (!idSet.has(habit.id)) {
+          result.push(habit);
+        } else if (!insertionDone) {
+          result.push(...reordered);
+          insertionDone = true;
+        }
+      }
+      if (!insertionDone) result.push(...reordered);
+      return result;
+    });
+    this.storage.set('habits', this._habits());
+  }
+
   archiveHabit(id: string): void {
     this.updateHabit(id, { isArchived: true });
   }
