@@ -7,7 +7,7 @@ import { MatMenuModule } from '@angular/material/menu';
 import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { CdkAccordionModule } from '@angular/cdk/accordion';
-import { CdkDropList, CdkDrag, CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
+import { CdkDropList, CdkDrag, CdkDragHandle, CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
 import { ProjectsService } from '../../services/projects/projects.service';
 import { Project, ProjectTask } from '../../models/project.model';
 import { ProjectForm } from '../../components/project-form/project-form';
@@ -19,7 +19,7 @@ import { toLocalDateString } from '../../utils/date.utils';
 @Component({
   selector: 'app-projects-page',
   standalone: true,
-  imports: [DatePipe, MatButtonModule, MatIconModule, MatMenuModule, CdkAccordionModule, CdkDropList, CdkDrag],
+  imports: [DatePipe, MatButtonModule, MatIconModule, MatMenuModule, CdkAccordionModule, CdkDropList, CdkDrag, CdkDragHandle],
   templateUrl: './projects.page.html',
   styleUrl: './projects.page.css',
   animations: [

@@ -67,9 +67,10 @@
         </button>
       </div>
 
-      <div class="tasks-list">
+      <div cdkDropList (cdkDropListDropped)="onDrop($event)" class="tasks-list">
         @for (taskCtrl of tasks.controls; track $index; let i = $index) {
-          <div class="task-row" [formGroup]="asFormGroup(taskCtrl)">
+          <div class="task-row" cdkDrag [formGroup]="asFormGroup(taskCtrl)">
+            <mat-icon cdkDragHandle class="drag-handle">drag_indicator</mat-icon>
 
             <mat-form-field appearance="outline" class="task-name-field">
               <mat-label>Task Name</mat-label>
