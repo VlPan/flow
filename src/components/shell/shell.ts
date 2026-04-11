@@ -46,6 +46,7 @@ export class Shell {
 
   protected readonly navItems: NavItem[] = [
     { label: 'Flow', route: '/flow', icon: 'hourglass_empty' },
+    { label: 'Projects', route: '/projects', icon: 'folder_special' },
     { label: 'Habits', route: '/habits', icon: 'repeat' },
     { label: 'Balance', route: '/balance', icon: 'balance' },
     { label: 'Bills', route: '/bills', icon: 'receipt_long' },

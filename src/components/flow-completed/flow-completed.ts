@@ -2,7 +2,7 @@ import { Component, computed, inject } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { DateService } from '../../services/date/date.service';
 import { SessionService } from '../../services/session/session.service';
-import { FlowVectorsService } from '../../services/flow-vectors/flow-vectors.service';
+import { ProjectsService } from '../../services/projects/projects.service';
 import { BalanceService } from '../../services/balance/balance.service';
 import { FlowCompletedRow } from '../flow-completed-row/flow-completed-row';
 import { ConfirmDialog } from '../confirm-dialog/confirm-dialog';
@@ -16,7 +16,7 @@ import {
   DeleteSessionDialogResult,
 } from '../delete-session-dialog/delete-session-dialog';
 import { SessionRecord } from '../../models/session.model';
-import { FlowVector } from '../../models/flow-vector.model';
+import { BREAK_VECTOR, BREAK_VECTOR_ID } from '../../models/flow-vector.model';
 import { toLocalDateString } from '../../utils/date.utils';
 import { calculateDailyScore, calculateSessionScore } from '../../utils/scoring.utils';
 
@@ -29,15 +29,16 @@ import { calculateDailyScore, calculateSessionScore } from '../../utils/scoring.
 })
 export class FlowCompleted {
   private readonly sessionService = inject(SessionService);
-  private readonly flowVectorsService = inject(FlowVectorsService);
+  private readonly projectsService = inject(ProjectsService);
   private readonly dateService = inject(DateService);
   private readonly balanceService = inject(BalanceService);
   private readonly dialog = inject(MatDialog);
 
-  private readonly vectorsMap = computed(() => {
-    const map = new Map<string, FlowVector>();
-    for (const v of this.flowVectorsService.vectorsIncludingBreak()) {
-      map.set(v.id, v);
+  private readonly projectsMap = computed(() => {
+    const map = new Map<string, { name: string; icon: string; color: string }>();
+    map.set(BREAK_VECTOR_ID, { name: BREAK_VECTOR.name, icon: BREAK_VECTOR.icon, color: BREAK_VECTOR.color });
+    for (const p of this.projectsService.allProjectsIncludingDeleted()) {
+      map.set(p.id, { name: p.name, icon: p.icon, color: p.color });
     }
     return map;
   });
@@ -45,7 +46,7 @@ export class FlowCompleted {
   protected readonly todayRecords = computed(() => {
     const date = toLocalDateString(this.dateService.selectedDay());
     return this.sessionService.records().filter(
-      r => r.startDate === date && this.vectorsMap().has(r.flowVectorId)
+      r => r.startDate === date && this.projectsMap().has(r.projectId)
     );
   });
 
@@ -53,12 +54,12 @@ export class FlowCompleted {
     calculateDailyScore(this.todayRecords())
   );
 
-  protected vectorFor(record: SessionRecord): FlowVector {
-    return this.vectorsMap().get(record.flowVectorId)!;
+  protected projectFor(record: SessionRecord): { name: string; icon: string; color: string } {
+    return this.projectsMap().get(record.projectId)!;
   }
 
   protected onEdit(record: SessionRecord): void {
-    const vector = this.vectorFor(record);
+    const project = this.projectFor(record);
     this.dialog
       .open(SessionCompleteDialog, {
         width: '480px',
@@ -66,8 +67,8 @@ export class FlowCompleted {
           sessionMinutes: record.sessionMinutes,
           flowScore: record.flowScore,
           shortDescription: record.shortDescription,
-          vectorName: vector.name,
-          vectorIcon: vector.icon,
+          vectorName: project.name,
+          vectorIcon: project.icon,
           isEdit: true,
         } satisfies SessionCompleteDialogData,
       })

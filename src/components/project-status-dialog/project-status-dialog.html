@@ -1,0 +1,70 @@
+<h2 mat-dialog-title>Status: {{ data.project.icon }} {{ data.project.name }}</h2>
+
+<mat-dialog-content>
+  <div class="flex flex-col gap-4 py-2">
+    <!-- Status buttons -->
+    <div>
+      <p class="text-sm font-medium text-gray-600 mb-2">Status</p>
+      <div class="status-buttons">
+        <button
+          class="status-btn"
+          [class.active]="status() === 'unset'"
+          (click)="setStatus('unset')"
+        >
+          <span class="status-dot unset"></span> UNSET
+        </button>
+        <button
+          class="status-btn"
+          [class.active]="status() === 'green'"
+          (click)="setStatus('green')"
+        >
+          <span class="status-dot green"></span> GREEN
+        </button>
+        <button
+          class="status-btn"
+          [class.active]="status() === 'yellow'"
+          (click)="setStatus('yellow')"
+        >
+          <span class="status-dot yellow"></span> YELLOW
+        </button>
+        <button
+          class="status-btn"
+          [class.active]="status() === 'red'"
+          (click)="setStatus('red')"
+        >
+          <span class="status-dot red"></span> RED
+        </button>
+      </div>
+    </div>
+
+    <!-- Important checkbox -->
+    <mat-checkbox
+      [checked]="important()"
+      [disabled]="!canMarkImportant"
+      (change)="important.set($event.checked)"
+    >
+      Mark as important
+    </mat-checkbox>
+
+    @if (!canMarkImportant) {
+      <div class="info-box">
+        <mat-icon class="info-icon">info</mat-icon>
+        <span>Important projects are displayed at the top of the list. You can mark up to 3 projects as important.</span>
+      </div>
+    }
+
+    <!-- Archive -->
+    <div class="archive-section">
+      <p class="text-sm font-medium text-gray-600 mb-2">Archive Project</p>
+      <button mat-stroked-button class="archive-btn" (click)="archive()">
+        <mat-icon>archive</mat-icon>
+        ARCHIVE PROJECT
+      </button>
+    </div>
+  </div>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button (click)="cancel()">Cancel</button>
+  <button mat-flat-button (click)="save()">Save</button>
+</mat-dialog-actions>

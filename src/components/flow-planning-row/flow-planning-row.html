@@ -2,7 +2,7 @@
   class="row-card"
   [class.active]="isActive()"
   [class.paused]="isPaused()"
-  [style.border-left-color]="vector().color"
+  [style.border-left-color]="project().color"
 >
   @if (isActive()) {
     <div class="fill-bar" [style.width.%]="fillPercent()"></div>
@@ -13,9 +13,9 @@
       <mat-icon>drag_indicator</mat-icon>
     </span>
   }
-  <span class="vector-icon">{{ vector().icon }}</span>
+  <span class="vector-icon">{{ project().icon }}</span>
   <div class="row-text">
-    <span class="vector-name" [style.color]="vector().color">{{ vector().name }}</span>
+    <span class="vector-name" [style.color]="project().color">{{ project().name }}</span>
     @if (row().shortDescription) {
       <span class="description"> - {{ row().shortDescription }}</span>
     }

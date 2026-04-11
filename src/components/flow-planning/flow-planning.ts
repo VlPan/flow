@@ -16,12 +16,13 @@ import {
   SessionCompleteDialogResult,
 } from '../session-complete-dialog/session-complete-dialog';
 import { PlanningRowService } from '../../services/planning-row/planning-row.service';
-import { FlowVectorsService } from '../../services/flow-vectors/flow-vectors.service';
+import { ProjectsService } from '../../services/projects/projects.service';
 import { SessionService } from '../../services/session/session.service';
 import { SessionSettingsService } from '../../services/session-settings/session-settings.service';
 import { BalanceService } from '../../services/balance/balance.service';
 import { PlanningRow } from '../../models/planning-row.model';
-import { FlowVector, BREAK_VECTOR } from '../../models/flow-vector.model';
+import { Project } from '../../models/project.model';
+import { BREAK_VECTOR } from '../../models/flow-vector.model';
 import { SessionRecord } from '../../models/session.model';
 import { toLocalDateString } from '../../utils/date.utils';
 import { calculateSessionScore } from '../../utils/scoring.utils';
@@ -38,14 +39,14 @@ export class FlowPlanning {
   protected readonly sessionService = inject(SessionService);
   protected readonly sessionSettings = inject(SessionSettingsService);
   private readonly planningRowService = inject(PlanningRowService);
-  private readonly flowVectorsService = inject(FlowVectorsService);
+  private readonly projectsService = inject(ProjectsService);
   private readonly balanceService = inject(BalanceService);
   private readonly dialog = inject(MatDialog);
 
-  private readonly vectorsMap = computed(() => {
-    const map = new Map<string, FlowVector>();
-    for (const v of this.flowVectorsService.vectors()) {
-      map.set(v.id, v);
+  private readonly projectsMap = computed(() => {
+    const map = new Map<string, Project>();
+    for (const p of this.projectsService.projects()) {
+      map.set(p.id, p);
     }
     return map;
   });
@@ -53,7 +54,7 @@ export class FlowPlanning {
   protected readonly todayRows = computed(() => {
     const date = toLocalDateString(this.dateService.selectedDay());
     const rows = this.planningRowService.rows().filter(
-      r => r.createdDate === date && this.vectorsMap().has(r.flowVectorId)
+      r => r.createdDate === date && this.projectsMap().has(r.projectId)
     );
     const activeRowId = this.sessionService.activeSession()?.planningRowId;
     if (!activeRowId) return rows;
@@ -68,9 +69,9 @@ export class FlowPlanning {
     toLocalDateString(this.dateService.selectedDay()) === toLocalDateString(this.dateService.today)
   );
 
-  protected readonly quickPickVectors = computed(() => {
+  protected readonly quickPickProjects = computed(() => {
     if (this.sessionService.activeSession()) return [];
-    return this.flowVectorsService.vectors();
+    return this.projectsService.projects();
   });
 
   protected moveToNextDay(): void {
@@ -87,18 +88,18 @@ export class FlowPlanning {
     );
   }
 
-  protected quickAdd(vector: FlowVector): void {
+  protected quickAdd(project: Project): void {
     this.planningRowService.create({
-      flowVectorId: vector.id,
+      projectId: project.id,
       shortDescription: '',
       createdDate: toLocalDateString(this.dateService.selectedDay()),
     });
   }
 
-  protected readonly activeBannerVector = computed(() => {
+  protected readonly activeBannerProject = computed(() => {
     const session = this.sessionService.activeSession();
     if (!session) return null;
-    return this.vectorsMap().get(session.flowVectorId) ?? null;
+    return this.projectsMap().get(session.projectId) ?? null;
   });
 
   protected readonly formattedElapsed = computed(() => {
@@ -113,8 +114,8 @@ export class FlowPlanning {
     return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
   });
 
-  protected vectorFor(row: PlanningRow): FlowVector {
-    return this.vectorsMap().get(row.flowVectorId)!;
+  protected projectFor(row: PlanningRow): Project {
+    return this.projectsMap().get(row.projectId)!;
   }
 
   protected isRowActive(row: PlanningRow): boolean {
@@ -132,7 +133,7 @@ export class FlowPlanning {
     this.dialog
       .open(PlanningRowForm, { width: '480px', data: null })
       .afterClosed()
-      .subscribe((result?: { flowVectorId: string; shortDescription: string }) => {
+      .subscribe((result?: { projectId: string; shortDescription: string }) => {
         if (!result) return;
         this.planningRowService.create({
           ...result,
@@ -145,7 +146,7 @@ export class FlowPlanning {
     this.dialog
       .open(PlanningRowForm, { width: '480px', data: row })
       .afterClosed()
-      .subscribe((result?: { flowVectorId: string; shortDescription: string }) => {
+      .subscribe((result?: { projectId: string; shortDescription: string }) => {
         if (!result) return;
         this.planningRowService.update(row.id, result);
       });
@@ -246,7 +247,7 @@ export class FlowPlanning {
   protected openCompleteDialog(): void {
     const session = this.sessionService.activeSession();
     if (!session) return;
-    const vector = this.vectorsMap().get(session.flowVectorId);
+    const project = this.projectsMap().get(session.projectId);
     this.dialog
       .open(SessionCompleteDialog, {
         width: '480px',
@@ -254,8 +255,8 @@ export class FlowPlanning {
           sessionMinutes: Math.max(1, this.sessionService.elapsedMinutes()),
           flowScore: 5,
           shortDescription: session.shortDescription,
-          vectorName: vector?.name ?? '',
-          vectorIcon: vector?.icon ?? '',
+          vectorName: project?.name ?? '',
+          vectorIcon: project?.icon ?? '',
           isEdit: false,
         } satisfies SessionCompleteDialogData,
       })

@@ -2,7 +2,7 @@ import { Injectable, OnDestroy, computed, inject, signal } from '@angular/core';
 import { v4 as uuidv4 } from 'uuid';
 import { ActiveSession, SessionRecord } from '../../models/session.model';
 import { PlanningRow } from '../../models/planning-row.model';
-import { BREAK_VECTOR_ID } from '../../models/flow-vector.model';
+import { BREAK_VECTOR_ID } from '../../models/flow-vector.model'; // BREAK_VECTOR_ID = 'break', still used as sentinel projectId
 import { LocalStorageService } from '../local-storage/local-storage.service';
 import { SessionSettingsService } from '../session-settings/session-settings.service';
 import { toLocalDateString } from '../../utils/date.utils';
@@ -62,7 +62,7 @@ export class SessionService implements OnDestroy {
   start(row: PlanningRow): void {
     const session: ActiveSession = {
       planningRowId: row.id,
-      flowVectorId: row.flowVectorId,
+      projectId: row.projectId,
       shortDescription: row.shortDescription,
       startedAt: new Date().toISOString(),
       pausedAt: null,
@@ -100,7 +100,7 @@ export class SessionService implements OnDestroy {
     const record: SessionRecord = {
       id: uuidv4(),
       planningRowId: session.planningRowId,
-      flowVectorId: session.flowVectorId,
+      projectId: session.projectId,
       shortDescription,
       sessionMinutes,
       flowScore,
@@ -125,7 +125,7 @@ export class SessionService implements OnDestroy {
     const record: SessionRecord = {
       id: uuidv4(),
       planningRowId: '',
-      flowVectorId: BREAK_VECTOR_ID,
+      projectId: BREAK_VECTOR_ID,
       shortDescription,
       sessionMinutes,
       flowScore,

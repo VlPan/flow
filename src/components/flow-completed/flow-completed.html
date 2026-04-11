@@ -10,7 +10,7 @@
     @for (record of todayRecords(); track record.id) {
       <app-flow-completed-row
         [record]="record"
-        [vector]="vectorFor(record)"
+        [vector]="projectFor(record)"
         (editRequested)="onEdit(record)"
         (deleteRequested)="onDelete(record)"
       />

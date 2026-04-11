@@ -2,7 +2,7 @@ import { z } from 'zod';
 
 export const planningRowSchema = z.object({
   id: z.string(),
-  flowVectorId: z.string(),
+  projectId: z.string(),
   shortDescription: z.string(),
   createdDate: z.string(), // YYYY-MM-DD
 });

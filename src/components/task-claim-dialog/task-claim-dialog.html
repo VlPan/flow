@@ -1,0 +1,30 @@
+<h2 mat-dialog-title>Claim Reward: {{ data.task.name }}</h2>
+
+<mat-dialog-content>
+  <div class="flex flex-col gap-6 py-2">
+    <p class="text-sm text-gray-500">
+      Choose your reward between <strong>{{ min }}</strong> and <strong>{{ max }}</strong> pts.
+    </p>
+
+    <mat-slider [min]="min" [max]="max" [step]="1" class="w-full">
+      <input matSliderThumb [(ngModel)]="points" />
+    </mat-slider>
+
+    <mat-form-field appearance="outline" class="w-32">
+      <mat-label>Points</mat-label>
+      <input
+        matInput
+        type="number"
+        [min]="min"
+        [max]="max"
+        [value]="points"
+        (change)="onInputChange($any($event.target).value)"
+      />
+    </mat-form-field>
+  </div>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button (click)="cancel()">Cancel</button>
+  <button mat-flat-button (click)="claim()">Claim {{ points }} pts</button>
+</mat-dialog-actions>

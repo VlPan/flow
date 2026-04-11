@@ -1,0 +1,104 @@
+<h2 mat-dialog-title>{{ isEditMode ? 'Edit Project' : 'Create Project' }}</h2>
+
+<mat-dialog-content>
+  <form [formGroup]="form" class="form-content">
+
+    <!-- Top row: name, icon, color -->
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Project Name</mat-label>
+      <input matInput formControlName="name" placeholder="Project name" />
+      @if (form.get('name')!.hasError('required') && form.get('name')!.touched) {
+        <mat-error>Name is required</mat-error>
+      }
+    </mat-form-field>
+
+    <div class="top-row">
+      <mat-form-field appearance="outline" class="icon-field">
+        <mat-label>Icon</mat-label>
+        <input matInput formControlName="icon" placeholder="🎯" maxlength="2" />
+      </mat-form-field>
+
+      <div class="color-field">
+        <label class="color-label">Color</label>
+        <button type="button" class="color-swatch" [style.background]="form.get('color')!.value"
+          (click)="$event.stopPropagation(); colorPickerOpen.set(!colorPickerOpen())">
+        </button>
+        @if (colorPickerOpen()) {
+          <div class="color-picker-dropdown">
+            <color-compact [color]="form.get('color')!.value" (onChangeComplete)="onColorChange($event)"></color-compact>
+          </div>
+        }
+      </div>
+
+      <mat-form-field appearance="outline" class="category-field">
+        <mat-label>Category</mat-label>
+        <mat-select formControlName="categoryId">
+          <mat-option [value]="null">Others</mat-option>
+          @for (cat of categories(); track cat.id) {
+            <mat-option [value]="cat.id">{{ cat.name }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+    </div>
+
+    <!-- Dates -->
+    <div class="dates-row">
+      <mat-form-field appearance="outline">
+        <mat-label>Start Date</mat-label>
+        <input matInput [matDatepicker]="startPicker" formControlName="startDate" />
+        <mat-datepicker-toggle matIconSuffix [for]="startPicker"></mat-datepicker-toggle>
+        <mat-datepicker #startPicker></mat-datepicker>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>End Date (optional)</mat-label>
+        <input matInput [matDatepicker]="endPicker" formControlName="endDate" />
+        <mat-datepicker-toggle matIconSuffix [for]="endPicker"></mat-datepicker-toggle>
+        <mat-datepicker #endPicker></mat-datepicker>
+      </mat-form-field>
+    </div>
+
+    <!-- Tasks -->
+    <div class="tasks-section">
+      <div class="tasks-header">
+        <span class="tasks-title">Tasks</span>
+        <button mat-stroked-button type="button" (click)="addTask()">
+          <mat-icon>add</mat-icon> ADD TASK
+        </button>
+      </div>
+
+      <div cdkDropList (cdkDropListDropped)="onDrop($event)" class="tasks-list">
+        @for (taskCtrl of tasks.controls; track $index; let i = $index) {
+          <div class="task-row" cdkDrag [formGroup]="asFormGroup(taskCtrl)">
+            <mat-icon cdkDragHandle class="drag-handle">drag_indicator</mat-icon>
+
+            <mat-form-field appearance="outline" class="task-name-field">
+              <mat-label>Task Name</mat-label>
+              <input matInput formControlName="name" />
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="pts-field">
+              <mat-label>Min P</mat-label>
+              <input matInput type="number" formControlName="minPoints" min="0" />
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="pts-field">
+              <mat-label>Max P</mat-label>
+              <input matInput type="number" formControlName="maxPoints" min="0" />
+            </mat-form-field>
+
+            <button mat-icon-button type="button" color="warn" (click)="removeTask(i)" [disabled]="asFormGroup(taskCtrl).get('claimed')!.value">
+              <mat-icon>delete</mat-icon>
+            </button>
+          </div>
+        }
+      </div>
+    </div>
+
+  </form>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button (click)="cancel()">Cancel</button>
+  <button mat-flat-button [disabled]="form.invalid" (click)="save()">Save</button>
+</mat-dialog-actions>

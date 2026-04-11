@@ -8,6 +8,7 @@ export const routes: Routes = [
     children: [
       { path: '', redirectTo: 'flow', pathMatch: 'full' },
       { path: 'flow', loadComponent: () => import('../pages/flow/flow.page').then(m => m.FlowPage) },
+      { path: 'projects', loadComponent: () => import('../pages/projects/projects.page').then(m => m.ProjectsPage) },
       { path: 'habits', loadComponent: () => import('../pages/habits/habits.page').then(m => m.HabitsPage) },
       { path: 'balance', loadComponent: () => import('../pages/balance/balance.page').then(m => m.BalancePage) },
       { path: 'bills', loadComponent: () => import('../pages/bills/bills.page').then(m => m.BillsPage) },
@@ -16,8 +17,7 @@ export const routes: Routes = [
         path: 'settings',
         loadComponent: () => import('../pages/settings/settings.page').then(m => m.SettingsPage),
         children: [
-          { path: '', redirectTo: 'flow-vectors', pathMatch: 'full' },
-          { path: 'flow-vectors', loadComponent: () => import('../pages/settings/flow-vectors/flow-vectors-settings.page').then(m => m.FlowVectorsSettingsPage) },
+          { path: '', redirectTo: 'session-settings', pathMatch: 'full' },
           { path: 'session-settings', loadComponent: () => import('../pages/settings/session-settings/session-settings.page').then(m => m.SessionSettingsPage) },
           { path: 'balance-settings', loadComponent: () => import('../pages/settings/balance-settings/balance-settings.page').then(m => m.BalanceSettingsPage) },
           { path: 'categories', loadComponent: () => import('../pages/settings/categories/categories-settings.page').then(m => m.CategoriesSettingsPage) },

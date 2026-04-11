@@ -6,7 +6,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatButtonModule } from '@angular/material/button';
 import { PlanningRow } from '../../models/planning-row.model';
-import { FlowVectorsService } from '../../services/flow-vectors/flow-vectors.service';
+import { ProjectsService } from '../../services/projects/projects.service';
 
 @Component({
   selector: 'app-planning-row-form',
@@ -26,13 +26,13 @@ export class PlanningRowForm {
   private readonly fb = inject(FormBuilder);
   private readonly dialogRef = inject(MatDialogRef<PlanningRowForm>);
   protected readonly data = inject<PlanningRow | null>(MAT_DIALOG_DATA);
-  private readonly flowVectorsService = inject(FlowVectorsService);
+  private readonly projectsService = inject(ProjectsService);
 
   protected readonly isEditMode = !!this.data;
-  protected readonly vectors = this.flowVectorsService.vectors;
+  protected readonly projects = this.projectsService.projects;
 
   protected readonly form = this.fb.group({
-    flowVectorId: [this.data?.flowVectorId ?? '', Validators.required],
+    projectId: [this.data?.projectId ?? '', Validators.required],
     shortDescription: [this.data?.shortDescription ?? ''],
   });
 
@@ -40,7 +40,7 @@ export class PlanningRowForm {
     if (this.form.invalid) return;
     const raw = this.form.getRawValue();
     this.dialogRef.close({
-      flowVectorId: raw.flowVectorId!,
+      projectId: raw.projectId!,
       shortDescription: raw.shortDescription ?? '',
     });
   }

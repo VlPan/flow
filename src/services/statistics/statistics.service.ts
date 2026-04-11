@@ -1,7 +1,7 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
 import { EChartsCoreOption } from 'echarts/core';
 import { SessionService } from '../session/session.service';
-import { FlowVectorsService } from '../flow-vectors/flow-vectors.service';
+import { ProjectsService } from '../projects/projects.service';
 import { HabitsService } from '../habits/habits.service';
 import { CategoriesService } from '../categories/categories.service';
 import {
@@ -10,17 +10,18 @@ import {
   toPtsOptions,
   toTimeOptions,
   toFlowScoreTrendOptions,
-  toVectorDonutOptions,
+  toProjectDonutOptions,
   toTimeOfDayHeatmapOptions,
   toDayOfWeekOptions,
   toSessionLengthDistOptions,
   toScoreVsLengthOptions,
+  toTaskClaimsOptions,
 } from '../../utils/statistics.utils';
 
 @Injectable({ providedIn: 'root' })
 export class StatisticsService {
   private readonly sessionService = inject(SessionService);
-  private readonly vectorsService = inject(FlowVectorsService);
+  private readonly projectsService = inject(ProjectsService);
   private readonly habitsService = inject(HabitsService);
   private readonly categoriesService = inject(CategoriesService);
 
@@ -31,7 +32,7 @@ export class StatisticsService {
   private readonly _data = computed(() =>
     buildChartData(
       this.sessionService.records(),
-      this.vectorsService.allVectorsIncludingDeleted(),
+      this.projectsService.allProjectsIncludingDeleted(),
       this.categoriesService.allCategoriesIncludingDeleted(),
       this.selectedRange(),
       this.today,
@@ -42,9 +43,12 @@ export class StatisticsService {
   readonly ptsChartOptions = computed<EChartsCoreOption>(() => toPtsOptions(this._data()));
   readonly timeChartOptions = computed<EChartsCoreOption>(() => toTimeOptions(this._data()));
   readonly flowScoreTrendOptions = computed<EChartsCoreOption>(() => toFlowScoreTrendOptions(this._data()));
-  readonly vectorDonutOptions = computed<EChartsCoreOption>(() => toVectorDonutOptions(this._data()));
+  readonly projectDonutOptions = computed<EChartsCoreOption>(() => toProjectDonutOptions(this._data()));
   readonly timeOfDayHeatmapOptions = computed<EChartsCoreOption>(() => toTimeOfDayHeatmapOptions(this._data()));
   readonly dayOfWeekOptions = computed<EChartsCoreOption>(() => toDayOfWeekOptions(this._data()));
   readonly sessionLengthDistOptions = computed<EChartsCoreOption>(() => toSessionLengthDistOptions(this._data()));
   readonly scoreVsLengthOptions = computed<EChartsCoreOption>(() => toScoreVsLengthOptions(this._data()));
+  readonly taskClaimsOptions = computed<EChartsCoreOption>(() =>
+    toTaskClaimsOptions(this.projectsService.claimRecords(), this.selectedRange(), this.today)
+  );
 }

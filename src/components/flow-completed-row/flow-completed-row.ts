@@ -3,7 +3,6 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { MatMenuModule } from '@angular/material/menu';
 import { SessionRecord } from '../../models/session.model';
-import { FlowVector } from '../../models/flow-vector.model';
 import { formatSessionTime, scoreColor, scoreColorRgba } from '../../utils/time.utils';
 import { SessionSettingsService } from '../../services/session-settings/session-settings.service';
 
@@ -16,7 +15,7 @@ import { SessionSettingsService } from '../../services/session-settings/session-
 })
 export class FlowCompletedRow {
   readonly record = input.required<SessionRecord>();
-  readonly vector = input.required<FlowVector>();
+  readonly vector = input.required<{ name: string; icon: string; color: string }>();
 
   readonly editRequested = output<void>();
   readonly deleteRequested = output<void>();

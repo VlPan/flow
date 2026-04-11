@@ -48,13 +48,24 @@
     ></div>
   </div>
 
-  <!-- Two-column row: vector donut + day-of-week -->
+  <!-- Task rewards chart -->
+  <div class="flex flex-col gap-2">
+    <h2 class="text-sm font-medium text-gray-500 uppercase tracking-wide">Task rewards per day</h2>
+    <div
+      echarts
+      [options]="stats.taskClaimsOptions()"
+      class="w-full"
+      style="height: 280px;"
+    ></div>
+  </div>
+
+  <!-- Two-column row: project donut + day-of-week -->
   <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
     <div class="flex flex-col gap-2">
-      <h2 class="text-sm font-medium text-gray-500 uppercase tracking-wide">Time by vector</h2>
+      <h2 class="text-sm font-medium text-gray-500 uppercase tracking-wide">Time by project</h2>
       <div
         echarts
-        [options]="stats.vectorDonutOptions()"
+        [options]="stats.projectDonutOptions()"
         class="w-full"
         style="height: 320px;"
       ></div>

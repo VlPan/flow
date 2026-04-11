@@ -29,7 +29,7 @@
           cdkDrag
           [cdkDragDisabled]="sessionService.activeSession() !== null"
           [row]="row"
-          [vector]="vectorFor(row)"
+          [project]="projectFor(row)"
           [isActive]="isRowActive(row)"
           [isAnySessionActive]="sessionService.activeSession() !== null"
           [fillPercent]="isRowActive(row) ? sessionService.fillPercent() : 0"
@@ -49,18 +49,18 @@
       </div>
     </div>
 
-    @if (quickPickVectors().length > 0) {
+    @if (quickPickProjects().length > 0) {
       <div class="quick-pick">
         <span class="quick-pick-label">Quick add</span>
         <div class="quick-pick-cards">
-          @for (vector of quickPickVectors(); track vector.id) {
+          @for (project of quickPickProjects(); track project.id) {
             <button
               class="quick-pick-card"
-              (click)="quickAdd(vector)"
-              [style.border-color]="vector.color"
+              (click)="quickAdd(project)"
+              [style.border-color]="project.color"
             >
-              <span class="quick-pick-icon">{{ vector.icon }}</span>
-              <span class="quick-pick-name" [style.color]="vector.color">{{ vector.name }}</span>
+              <span class="quick-pick-icon">{{ project.icon }}</span>
+              <span class="quick-pick-name" [style.color]="project.color">{{ project.name }}</span>
             </button>
           }
         </div>
@@ -71,9 +71,9 @@
 
 @if (sessionService.activeSession() && !sessionSettings.hideActiveBanner()) {
   <div class="active-banner" [class.paused]="sessionService.isPaused()">
-    <span class="banner-icon">{{ activeBannerVector()?.icon }}</span>
+    <span class="banner-icon">{{ activeBannerProject()?.icon }}</span>
     <div class="banner-text">
-      <span class="banner-name">{{ activeBannerVector()?.name }}</span>
+      <span class="banner-name">{{ activeBannerProject()?.name }}</span>
       <span class="banner-time">{{ sessionSettings.hidePassedTime() ? '--:--' : formattedElapsed() }}</span>
     </div>
     <div class="banner-actions">

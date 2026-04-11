@@ -4,7 +4,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatMenuModule } from '@angular/material/menu';
 import { CdkDragHandle } from '@angular/cdk/drag-drop';
 import { PlanningRow } from '../../models/planning-row.model';
-import { FlowVector } from '../../models/flow-vector.model';
+import { Project } from '../../models/project.model';
 
 @Component({
   selector: 'app-flow-planning-row',
@@ -15,7 +15,7 @@ import { FlowVector } from '../../models/flow-vector.model';
 })
 export class FlowPlanningRow {
   readonly row = input.required<PlanningRow>();
-  readonly vector = input.required<FlowVector>();
+  readonly project = input.required<Project>();
   readonly isActive = input<boolean>(false);
   readonly isAnySessionActive = input<boolean>(false);
   readonly fillPercent = input<number>(0);

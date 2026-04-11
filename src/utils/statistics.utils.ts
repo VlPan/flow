@@ -1,6 +1,6 @@
 import { EChartsCoreOption } from 'echarts/core';
 import { SessionRecord } from '../models/session.model';
-import { FlowVector, DEFAULT_VECTOR_COLOR } from '../models/flow-vector.model';
+import { Project, TaskClaimRecord, DEFAULT_PROJECT_COLOR } from '../models/project.model';
 import { Category, DEFAULT_CATEGORY_COLOR, OTHERS_CATEGORY_ID } from '../models/category.model';
 import { HabitCompletion } from '../models/habit.model';
 import { calculateSessionScore } from './scoring.utils';
@@ -23,7 +23,7 @@ interface Bucket {
 
 export interface ChartData {
   buckets: Bucket[];
-  activeVectors: FlowVector[];
+  activeProjects: Project[];
   activeCategories: Category[];
   isWeekly: boolean;
   filteredRecords: SessionRecord[];
@@ -51,15 +51,15 @@ function formatDayLabel(date: Date, showWeekday: boolean): string {
 
 function calcBucket(
   records: SessionRecord[],
-  vectorToCategoryId: Record<string, string>,
+  projectToCategoryId: Record<string, string>,
 ): Pick<Bucket, 'score' | 'minutesByVector' | 'minutesByCategory'> {
   const minutesByVector: Record<string, number> = {};
   const minutesByCategory: Record<string, number> = {};
   let score = 0;
   for (const r of records) {
     score += calculateSessionScore(r.sessionMinutes, r.flowScore);
-    minutesByVector[r.flowVectorId] = (minutesByVector[r.flowVectorId] ?? 0) + r.sessionMinutes;
-    const catId = vectorToCategoryId[r.flowVectorId] ?? OTHERS_CATEGORY_ID;
+    minutesByVector[r.projectId] = (minutesByVector[r.projectId] ?? 0) + r.sessionMinutes;
+    const catId = projectToCategoryId[r.projectId] ?? OTHERS_CATEGORY_ID;
     minutesByCategory[catId] = (minutesByCategory[catId] ?? 0) + r.sessionMinutes;
   }
   return { score: Math.round(score), minutesByVector, minutesByCategory };
@@ -125,7 +125,7 @@ function buildWeeklyBuckets(
 
 export function buildChartData(
   records: SessionRecord[],
-  allVectors: FlowVector[],
+  allProjects: Project[],
   allCategories: Category[],
   range: TimeRange,
   today: Date,
@@ -135,8 +135,8 @@ export function buildChartData(
   let startDate: Date;
   let isWeekly = false;
 
-  const vectorToCategoryId: Record<string, string> = Object.fromEntries(
-    allVectors.map(v => [v.id, v.categoryId ?? OTHERS_CATEGORY_ID]),
+  const projectToCategoryId: Record<string, string> = Object.fromEntries(
+    allProjects.map(p => [p.id, p.categoryId ?? OTHERS_CATEGORY_ID]),
   );
 
   if (range === '7d') {
@@ -147,7 +147,7 @@ export function buildChartData(
     startDate = addDays(todayNorm, -99);
   } else {
     if (records.length === 0 && habitCompletions.length === 0) {
-      return { buckets: [], activeVectors: [], activeCategories: [], isWeekly: false, filteredRecords: [] };
+      return { buckets: [], activeProjects: [], activeCategories: [], isWeekly: false, filteredRecords: [] };
     }
     const allDates = [
       ...records.map(r => r.startDate),
@@ -166,14 +166,14 @@ export function buildChartData(
   const habitPtsPerDay = getHabitPointsPerDay(habitCompletions, startStr, endStr);
 
   const buckets = isWeekly
-    ? buildWeeklyBuckets(rangeRecords, startDate, todayNorm, habitPtsPerDay, vectorToCategoryId)
-    : buildDailyBuckets(rangeRecords, startDate, todayNorm, range === '7d', habitPtsPerDay, vectorToCategoryId);
+    ? buildWeeklyBuckets(rangeRecords, startDate, todayNorm, habitPtsPerDay, projectToCategoryId)
+    : buildDailyBuckets(rangeRecords, startDate, todayNorm, range === '7d', habitPtsPerDay, projectToCategoryId);
 
-  // Only include vectors that have at least 1 minute in this range
-  const usedVectorIds = new Set<string>(
+  // Only include projects that have at least 1 minute in this range
+  const usedProjectIds = new Set<string>(
     buckets.flatMap(b => Object.keys(b.minutesByVector).filter(id => b.minutesByVector[id] > 0)),
   );
-  const activeVectors = allVectors.filter(v => usedVectorIds.has(v.id));
+  const activeProjects = allProjects.filter(p => usedProjectIds.has(p.id));
 
   // Only include categories that have at least 1 minute in this range
   const usedCategoryIds = new Set<string>(
@@ -181,7 +181,7 @@ export function buildChartData(
   );
   const activeCategories = allCategories.filter(c => usedCategoryIds.has(c.id));
 
-  return { buckets, activeVectors, activeCategories, isWeekly, filteredRecords: rangeRecords };
+  return { buckets, activeProjects, activeCategories, isWeekly, filteredRecords: rangeRecords };
 }
 
 export function toPtsOptions(data: ChartData): EChartsCoreOption {
@@ -316,22 +316,22 @@ export function toFlowScoreTrendOptions(data: ChartData): EChartsCoreOption {
   };
 }
 
-export function toVectorDonutOptions(data: ChartData): EChartsCoreOption {
-  const { buckets, activeVectors } = data;
+export function toProjectDonutOptions(data: ChartData): EChartsCoreOption {
+  const { buckets, activeProjects } = data;
 
-  const totalByVector: Record<string, number> = {};
+  const totalByProject: Record<string, number> = {};
   for (const b of buckets) {
     for (const [id, mins] of Object.entries(b.minutesByVector)) {
-      totalByVector[id] = (totalByVector[id] ?? 0) + mins;
+      totalByProject[id] = (totalByProject[id] ?? 0) + mins;
     }
   }
 
-  const pieData = activeVectors
-    .filter(v => (totalByVector[v.id] ?? 0) > 0)
-    .map(v => ({
-      name: `${v.icon} ${v.name}`,
-      value: totalByVector[v.id],
-      itemStyle: { color: v.color || DEFAULT_VECTOR_COLOR },
+  const pieData = activeProjects
+    .filter(p => (totalByProject[p.id] ?? 0) > 0)
+    .map(p => ({
+      name: `${p.icon} ${p.name}`,
+      value: totalByProject[p.id],
+      itemStyle: { color: p.color || DEFAULT_PROJECT_COLOR },
     }));
 
   return {
@@ -484,24 +484,24 @@ export function toSessionLengthDistOptions(data: ChartData): EChartsCoreOption {
 }
 
 export function toScoreVsLengthOptions(data: ChartData): EChartsCoreOption {
-  const { filteredRecords, activeVectors } = data;
-  const vectorMap = new Map(activeVectors.map(v => [v.id, v]));
+  const { filteredRecords, activeProjects } = data;
+  const projectMap = new Map(activeProjects.map(p => [p.id, p]));
 
-  const pointsByVector = new Map<string, [number, number][]>();
+  const pointsByProject = new Map<string, [number, number][]>();
   for (const r of filteredRecords) {
-    const arr = pointsByVector.get(r.flowVectorId) ?? [];
+    const arr = pointsByProject.get(r.projectId) ?? [];
     arr.push([r.sessionMinutes, r.flowScore]);
-    pointsByVector.set(r.flowVectorId, arr);
+    pointsByProject.set(r.projectId, arr);
   }
 
-  const series = [...pointsByVector.entries()].map(([id, points]) => {
-    const v = vectorMap.get(id);
+  const series = [...pointsByProject.entries()].map(([id, points]) => {
+    const p = projectMap.get(id);
     return {
-      name: v ? `${v.icon} ${v.name}` : id,
+      name: p ? `${p.icon} ${p.name}` : id,
       type: 'scatter',
       data: points,
       symbolSize: 8,
-      itemStyle: { color: v?.color || DEFAULT_VECTOR_COLOR },
+      itemStyle: { color: p?.color || DEFAULT_PROJECT_COLOR },
     };
   });
 
@@ -527,5 +527,101 @@ export function toScoreVsLengthOptions(data: ChartData): EChartsCoreOption {
       nameTextStyle: { fontSize: 11 },
     },
     series,
+  };
+}
+
+export function toTaskClaimsOptions(
+  claimRecords: TaskClaimRecord[],
+  range: TimeRange,
+  today: Date,
+): EChartsCoreOption {
+  const todayNorm = normDate(today);
+  let startDate: Date;
+  let isWeekly = false;
+
+  if (range === '7d') {
+    startDate = addDays(todayNorm, -6);
+  } else if (range === '30d') {
+    startDate = addDays(todayNorm, -29);
+  } else if (range === '100d') {
+    startDate = addDays(todayNorm, -99);
+  } else {
+    if (claimRecords.length === 0) {
+      return {
+        grid: { left: 56, right: 16, top: 16, bottom: 64 },
+        xAxis: { type: 'category', data: [] },
+        yAxis: { type: 'value', name: 'pts' },
+        series: [{ type: 'bar', data: [] }],
+      };
+    }
+    const earliestStr = claimRecords.map(c => c.date).reduce((min, d) => (d < min ? d : min));
+    startDate = normDate(new Date(earliestStr));
+    const spanDays = Math.ceil((todayNorm.getTime() - startDate.getTime()) / 86_400_000) + 1;
+    isWeekly = spanDays > 60;
+  }
+
+  const startStr = toLocalDateString(startDate);
+  const endStr = toLocalDateString(todayNorm);
+  const rangeRecords = claimRecords.filter(r => r.date >= startStr && r.date <= endStr);
+
+  if (isWeekly) {
+    // Weekly buckets
+    const weekBuckets: { key: string; label: string; pts: number }[] = [];
+    let weekStart = normDate(getWeekStart(startDate));
+    while (weekStart <= todayNorm) {
+      const weekEnd = addDays(weekStart, 6);
+      const wsStr = toLocalDateString(weekStart);
+      const weStr = toLocalDateString(weekEnd);
+      const pts = rangeRecords
+        .filter(r => r.date >= wsStr && r.date <= weStr)
+        .reduce((sum, r) => sum + r.points, 0);
+      const label = `${MONTHS[weekStart.getMonth()]} ${weekStart.getDate()}`;
+      weekBuckets.push({ key: wsStr, label, pts });
+      weekStart = addDays(weekStart, 7);
+    }
+    return buildTaskClaimsChart(weekBuckets.map(b => b.label), weekBuckets.map(b => b.pts));
+  }
+
+  // Daily buckets
+  const byDate = new Map<string, number>();
+  for (const r of rangeRecords) {
+    byDate.set(r.date, (byDate.get(r.date) ?? 0) + r.points);
+  }
+
+  const labels: string[] = [];
+  const values: number[] = [];
+  let cur = normDate(startDate);
+  const showWeekday = range === '7d';
+  while (cur <= todayNorm) {
+    const key = toLocalDateString(cur);
+    labels.push(formatDayLabel(cur, showWeekday));
+    values.push(byDate.get(key) ?? 0);
+    cur = addDays(cur, 1);
+  }
+
+  return buildTaskClaimsChart(labels, values);
+}
+
+function buildTaskClaimsChart(labels: string[], values: number[]): EChartsCoreOption {
+  return {
+    grid: { left: 56, right: 16, top: 16, bottom: 64 },
+    tooltip: {
+      trigger: 'axis',
+      axisPointer: { type: 'shadow' },
+      formatter: (params: any[]) => `${params[0].axisValue}<br/>${params[0].marker}Task rewards: <b>${params[0].value} pts</b>`,
+    },
+    xAxis: {
+      type: 'category',
+      data: labels,
+      axisLabel: { rotate: 40, fontSize: 11 },
+    },
+    yAxis: { type: 'value', name: 'pts', nameTextStyle: { fontSize: 11 } },
+    series: [{
+      name: 'Task rewards',
+      type: 'bar',
+      data: values,
+      barMinHeight: 1,
+      itemStyle: { color: '#ffb300' },
+    }],
   };
 }

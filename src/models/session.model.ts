@@ -2,7 +2,7 @@ import { z } from 'zod';
 
 export const activeSessionSchema = z.object({
   planningRowId: z.string(),
-  flowVectorId: z.string(),
+  projectId: z.string(),
   shortDescription: z.string(),
   startedAt: z.string(),      // ISO timestamp
   pausedAt: z.string().nullable(),
@@ -12,7 +12,7 @@ export const activeSessionSchema = z.object({
 export const sessionRecordSchema = z.object({
   id: z.string(),
   planningRowId: z.string(),
-  flowVectorId: z.string(),
+  projectId: z.string(),
   shortDescription: z.string(),
   sessionMinutes: z.number(),
   flowScore: z.number(),

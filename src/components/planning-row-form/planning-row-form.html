@@ -3,14 +3,14 @@
 <mat-dialog-content>
   <form [formGroup]="form">
     <mat-form-field appearance="outline" class="full-width">
-      <mat-label>Flow Vector</mat-label>
-      <mat-select formControlName="flowVectorId">
-        @for (vector of vectors(); track vector.id) {
-          <mat-option [value]="vector.id">{{ vector.icon }} {{ vector.name }}</mat-option>
+      <mat-label>Project</mat-label>
+      <mat-select formControlName="projectId">
+        @for (project of projects(); track project.id) {
+          <mat-option [value]="project.id">{{ project.icon }} {{ project.name }}</mat-option>
         }
       </mat-select>
-      @if (form.get('flowVectorId')?.invalid && form.get('flowVectorId')?.touched) {
-        <mat-error>Flow vector is required</mat-error>
+      @if (form.get('projectId')?.invalid && form.get('projectId')?.touched) {
+        <mat-error>Project is required</mat-error>
       }
     </mat-form-field>
 

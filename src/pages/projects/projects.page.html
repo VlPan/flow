@@ -1,0 +1,166 @@
+<div class="projects-page">
+
+  <!-- Header -->
+  <div class="page-header">
+    <h1 class="page-title">Projects</h1>
+    <button mat-flat-button (click)="openCreateDialog()">
+      <mat-icon>add</mat-icon> CREATE PROJECT
+    </button>
+  </div>
+
+  <!-- Active projects -->
+  <cdk-accordion class="projects-list">
+    @for (project of projectsService.sortedActiveProjects(); track project.id) {
+      <cdk-accordion-item #item="cdkAccordionItem" [expanded]="false">
+
+        <!-- Project row -->
+        <div class="project-row" [class.important]="project.important">
+          <!-- Progress bars -->
+          <div class="progress-bars">
+            <div class="progress-bar completion-bar"
+              [style.width.%]="completionPercent(project)"
+              [style.background]="project.color">
+            </div>
+            @if (project.endDate) {
+              <div class="progress-bar time-bar"
+                [style.width.%]="timeElapsedPercent(project)">
+              </div>
+            }
+          </div>
+
+          <!-- Row content -->
+          <div class="row-content" (click)="item.toggle()">
+            <div class="row-main">
+              <div class="project-info">
+                <span class="project-icon">{{ project.icon }}</span>
+
+                <!-- Status dot (before name) -->
+                <button class="status-dot-btn" [title]="'Status: ' + project.status"
+                  (click)="$event.stopPropagation(); openStatusDialog(project)">
+                  <span class="status-dot"
+                    [style.background]="statusColor(project.status)"
+                    [style.box-shadow]="project.status !== 'unset' ? '0 0 7px 2px ' + statusColor(project.status) : 'none'">
+                  </span>
+                </button>
+
+                <div class="project-meta">
+                  <span class="project-name">{{ project.name }}</span>
+                  <span class="project-dates">
+                    {{ project.startDate | date: 'dd/MM/yyyy' }}
+                    @if (project.endDate) {
+                      - {{ project.endDate | date: 'dd/MM/yyyy' }}
+                    }
+                    ·
+                    <span [class.overdue]="isOverdue(project)">{{ daysLabel(project) }}</span>
+                  </span>
+                </div>
+              </div>
+
+              <div class="row-actions" (click)="$event.stopPropagation()">
+                <span class="completion-chip" [class.done]="completionPercent(project) === 100">
+                  {{ completionPercent(project) }}% Done
+                </span>
+
+                <!-- Edit -->
+                <button mat-icon-button (click)="openEditDialog(project)" title="Edit">
+                  <mat-icon>edit</mat-icon>
+                </button>
+
+                <!-- Delete -->
+                <button mat-icon-button color="warn" (click)="onDeleteProject(project)" title="Delete">
+                  <mat-icon>delete</mat-icon>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Expanded tasks -->
+          @if (item.expanded) {
+            <div class="tasks-list" [@expandCollapse]
+              cdkDropList
+              (cdkDropListDropped)="onTaskDrop(project, $event)">
+              @for (task of sortedTasks(project); track task.id) {
+                <div class="task-row" [class.claimed]="task.claimed" cdkDrag>
+                  <mat-icon cdkDragHandle class="drag-handle">drag_indicator</mat-icon>
+                  <mat-icon class="task-check"
+                    (click)="!task.claimed && onClaimTask(project, task)">
+                    {{ task.claimed ? 'check_circle' : 'radio_button_unchecked' }}
+                  </mat-icon>
+                  <span class="task-name">{{ task.name }}</span>
+                  <span class="task-pts">
+                    @if (task.claimed) {
+                      {{ task.claimedPoints }} pts
+                    } @else {
+                      {{ task.minPoints }}–{{ task.maxPoints }} pts
+                    }
+                  </span>
+                </div>
+              }
+              @if (project.tasks.length === 0) {
+                <div class="empty-tasks">No tasks yet. Edit the project to add tasks.</div>
+              }
+            </div>
+          }
+        </div>
+
+      </cdk-accordion-item>
+    }
+
+    @if (projectsService.sortedActiveProjects().length === 0) {
+      <div class="empty-state">
+        <p>No active projects. Create your first project!</p>
+      </div>
+    }
+  </cdk-accordion>
+
+  <!-- Archived projects -->
+  @if (projectsService.archivedProjects().length > 0) {
+    <div class="archived-section">
+      <button class="archived-header" (click)="archivedExpanded.set(!archivedExpanded())">
+        <mat-icon>{{ archivedExpanded() ? 'expand_less' : 'expand_more' }}</mat-icon>
+        <span>Archived Projects ({{ projectsService.archivedProjects().length }})</span>
+      </button>
+
+      @if (archivedExpanded()) {
+        <div class="archived-list">
+          @for (project of projectsService.archivedProjects(); track project.id) {
+            <div class="project-row archived">
+              <div class="progress-bars">
+                <div class="progress-bar completion-bar"
+                  [style.width.%]="completionPercent(project)"
+                  [style.background]="project.color">
+                </div>
+              </div>
+              <div class="row-content">
+                <div class="row-main">
+                  <div class="project-info">
+                    <span class="project-icon">{{ project.icon }}</span>
+                    <div class="project-meta">
+                      <span class="project-name">{{ project.name }}</span>
+                      <span class="project-dates">{{ project.startDate | date: 'dd/MM/yyyy' }}</span>
+                    </div>
+                  </div>
+                  <div class="row-actions">
+                    <span class="completion-chip" [class.done]="completionPercent(project) === 100">
+                      {{ completionPercent(project) }}% Done
+                    </span>
+                    <button mat-icon-button (click)="openEditDialog(project)" title="Edit">
+                      <mat-icon>edit</mat-icon>
+                    </button>
+                    <button mat-icon-button (click)="onUnarchive(project)" title="Unarchive">
+                      <mat-icon>unarchive</mat-icon>
+                    </button>
+                    <button mat-icon-button color="warn" (click)="onDeleteProject(project)" title="Delete">
+                      <mat-icon>delete</mat-icon>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          }
+        </div>
+      }
+    </div>
+  }
+
+</div>
