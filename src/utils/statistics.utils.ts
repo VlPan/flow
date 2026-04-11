@@ -185,19 +185,91 @@ export function buildChartData(
   return { buckets, activeProjects, activeCategories, isWeekly, filteredRecords: rangeRecords };
 }
 
+export interface KpiSummary {
+  totalSessions: number;
+  totalFocusedTime: string;
+  avgFlowScore: string;
+  avgSessionTime: string;
+  flowPts: number;
+  habitPts: number;
+  taskPts: number;
+}
+
+function formatMinutes(minutes: number): string {
+  const hours = Math.floor(minutes / 60);
+  const mins = minutes % 60;
+  return hours > 0 ? `${hours}h ${mins}m` : `${mins}m`;
+}
+
+export function getTaskPtsInRange(claimRecords: TaskClaimRecord[], range: TimeRange, today: Date): number {
+  const todayNorm = normDate(today);
+  let startStr: string;
+  if (range === '7d') {
+    startStr = toLocalDateString(addDays(todayNorm, -6));
+  } else if (range === '30d') {
+    startStr = toLocalDateString(addDays(todayNorm, -29));
+  } else if (range === '100d') {
+    startStr = toLocalDateString(addDays(todayNorm, -99));
+  } else {
+    startStr = claimRecords.length > 0
+      ? claimRecords.map(c => c.date).reduce((min, d) => (d < min ? d : min))
+      : toLocalDateString(todayNorm);
+  }
+  const endStr = toLocalDateString(todayNorm);
+  return claimRecords
+    .filter(r => r.date >= startStr && r.date <= endStr)
+    .reduce((sum, r) => sum + r.points, 0);
+}
+
+export function buildKpiSummary(data: ChartData, taskPts: number): KpiSummary {
+  const { filteredRecords, buckets } = data;
+  const focusRecords = filteredRecords.filter(r => r.projectId !== BREAK_VECTOR_ID);
+  const totalMinutes = filteredRecords.reduce((sum, r) => sum + r.sessionMinutes, 0);
+  const avgRaw = focusRecords.length > 0
+    ? Math.round(focusRecords.reduce((sum, r) => sum + r.sessionMinutes, 0) / focusRecords.length)
+    : 0;
+  const avgFlowScore = filteredRecords.length > 0
+    ? (filteredRecords.reduce((sum, r) => sum + r.flowScore, 0) / filteredRecords.length).toFixed(1)
+    : '—';
+  const flowPts = buckets.reduce((sum, b) => sum + b.score, 0);
+  const habitPts = buckets.reduce((sum, b) => sum + b.habitPts, 0);
+  return {
+    totalSessions: filteredRecords.length,
+    totalFocusedTime: formatMinutes(totalMinutes),
+    avgFlowScore,
+    avgSessionTime: avgRaw > 0 ? formatMinutes(avgRaw) : '—',
+    flowPts,
+    habitPts,
+    taskPts,
+  };
+}
+
+function movingAverage(values: number[], window: number): (number | null)[] {
+  return values.map((_, i) => {
+    if (i < window - 1) return null;
+    const slice = values.slice(i - window + 1, i + 1);
+    return +(slice.reduce((a, b) => a + b, 0) / window).toFixed(1);
+  });
+}
+
 export function toPtsOptions(data: ChartData): EChartsCoreOption {
-  const { buckets } = data;
+  const { buckets, isWeekly } = data;
+  const totals = buckets.map(b => b.score + b.habitPts);
+  const maWindow = isWeekly ? 2 : 14;
+  const maLabel = isWeekly ? '2-week MA' : '14-day MA';
+  const maData = movingAverage(totals, maWindow);
   return {
     grid: { left: 56, right: 16, top: 16, bottom: 64 },
     tooltip: {
       trigger: 'axis',
       axisPointer: { type: 'shadow' },
       formatter: (params: any[]) => {
-        const lines = params
-          .filter((p: any) => p.value > 0)
-          .map((p: any) => `${p.marker}${p.seriesName}: <b>${p.value} pts</b>`);
-        const total = params.reduce((s: number, p: any) => s + (p.value as number), 0);
-        return `${params[0].axisValue}<br/>${lines.join('<br/>')}<br/>Total: <b>${total} pts</b>`;
+        const bars = params.filter((p: any) => p.seriesType === 'bar' && p.value > 0);
+        const ma = params.find((p: any) => p.seriesType === 'line');
+        const lines = bars.map((p: any) => `${p.marker}${p.seriesName}: <b>${p.value} pts</b>`);
+        const total = bars.reduce((s: number, p: any) => s + (p.value as number), 0);
+        const maLine = ma?.value != null ? `<br/>${ma.marker}${ma.seriesName}: <b>${ma.value} pts</b>` : '';
+        return `${params[0].axisValue}<br/>${lines.join('<br/>')}<br/>Total: <b>${total} pts</b>${maLine}`;
       },
     },
     xAxis: {
@@ -224,23 +296,46 @@ export function toPtsOptions(data: ChartData): EChartsCoreOption {
         barMinHeight: 1,
         itemStyle: { color: '#81C784' },
       },
+      {
+        name: maLabel,
+        type: 'line',
+        data: maData,
+        smooth: true,
+        connectNulls: false,
+        symbol: 'none',
+        lineStyle: { color: '#FF7043', width: 2, type: 'dashed' },
+        itemStyle: { color: '#FF7043' },
+      },
     ],
   };
 }
 
+function fmtMins(m: number): string {
+  m = Math.round(m);
+  if (m < 60) return `${m}min`;
+  const h = Math.floor(m / 60);
+  const rem = m % 60;
+  return rem > 0 ? `${h}h${rem}m` : `${h}h`;
+}
+
 export function toTimeOptions(data: ChartData): EChartsCoreOption {
-  const { buckets, activeCategories } = data;
+  const { buckets, activeCategories, isWeekly } = data;
+  const totals = buckets.map(b => Object.values(b.minutesByCategory).reduce((s, v) => s + v, 0));
+  const maWindow = isWeekly ? 2 : 14;
+  const maLabel = isWeekly ? '2-week MA' : '14-day MA';
+  const maData = movingAverage(totals, maWindow);
   return {
     grid: { left: 56, right: 16, top: 16, bottom: 64 },
     tooltip: {
       trigger: 'axis',
       axisPointer: { type: 'shadow' },
       formatter: (params: any[]) => {
-        const lines = params
-          .filter((p: any) => p.value > 0)
-          .map((p: any) => `${p.marker}${p.seriesName}: <b>${p.value} min</b>`);
-        const total = params.reduce((s: number, p: any) => s + (p.value as number), 0);
-        return `${params[0].axisValue}<br/>${lines.join('<br/>')}<br/>Total: <b>${total} min</b>`;
+        const bars = params.filter((p: any) => p.seriesType === 'bar' && p.value > 0);
+        const ma = params.find((p: any) => p.seriesType === 'line');
+        const lines = bars.map((p: any) => `${p.marker}${p.seriesName}: <b>${fmtMins(p.value)}</b>`);
+        const total = bars.reduce((s: number, p: any) => s + (p.value as number), 0);
+        const maLine = ma?.value != null ? `<br/>${ma.marker}${ma.seriesName}: <b>${fmtMins(ma.value)}</b>` : '';
+        return `${params[0].axisValue}<br/>${lines.join('<br/>')}<br/>Total: <b>${fmtMins(total)}</b>${maLine}`;
       },
     },
     xAxis: {
@@ -254,13 +349,25 @@ export function toTimeOptions(data: ChartData): EChartsCoreOption {
       type: 'scroll',
       textStyle: { fontSize: 11 },
     },
-    series: activeCategories.map(c => ({
-      name: c.name,
-      type: 'bar',
-      stack: 'time',
-      data: buckets.map(b => b.minutesByCategory[c.id] ?? 0),
-      itemStyle: { color: c.color || DEFAULT_CATEGORY_COLOR },
-    })),
+    series: [
+      ...activeCategories.map(c => ({
+        name: c.name,
+        type: 'bar' as const,
+        stack: 'time',
+        data: buckets.map(b => b.minutesByCategory[c.id] ?? 0),
+        itemStyle: { color: c.color || DEFAULT_CATEGORY_COLOR },
+      })),
+      {
+        name: maLabel,
+        type: 'line' as const,
+        data: maData,
+        smooth: true,
+        connectNulls: false,
+        symbol: 'none',
+        lineStyle: { color: '#FF7043', width: 2, type: 'dashed' },
+        itemStyle: { color: '#FF7043' },
+      },
+    ],
   };
 }
 
@@ -821,5 +928,111 @@ function buildTaskClaimsChart(labels: string[], values: number[]): EChartsCoreOp
       barMinHeight: 1,
       itemStyle: { color: '#ffb300' },
     }],
+  };
+}
+
+export interface GoalConfig {
+  startDate: string; // YYYY-MM-DD
+  endDate: string;   // YYYY-MM-DD
+  points: number;
+}
+
+export function toGoalChartOptions(
+  allRecords: SessionRecord[],
+  allCompletions: HabitCompletion[],
+  allClaimRecords: TaskClaimRecord[],
+  goal: GoalConfig,
+  today: Date,
+): EChartsCoreOption {
+  const { startDate, endDate, points: goalPoints } = goal;
+  const todayStr = toLocalDateString(normDate(today));
+
+  const rangeRecords = allRecords.filter(r => r.startDate >= startDate && r.startDate <= endDate);
+  const habitPtsPerDay = getHabitPointsPerDay(allCompletions, startDate, endDate);
+
+  const taskPtsPerDay: Record<string, number> = {};
+  for (const r of allClaimRecords.filter(r => r.date >= startDate && r.date <= endDate)) {
+    taskPtsPerDay[r.date] = (taskPtsPerDay[r.date] ?? 0) + r.points;
+  }
+
+  // Build daily buckets
+  const labels: string[] = [];
+  const cumulativeData: (number | null)[] = [];
+  let running = 0;
+  let cur = normDate(new Date(startDate + 'T00:00:00'));
+  const end = normDate(new Date(endDate + 'T00:00:00'));
+
+  const byDate = new Map<string, SessionRecord[]>();
+  for (const r of rangeRecords) {
+    const arr = byDate.get(r.startDate) ?? [];
+    arr.push(r);
+    byDate.set(r.startDate, arr);
+  }
+
+  while (cur <= end) {
+    const key = toLocalDateString(cur);
+    if (key <= todayStr) {
+      const dayRecs = byDate.get(key) ?? [];
+      const dayScore = dayRecs.reduce((s, r) => s + calculateSessionScore(r.sessionMinutes, r.flowScore), 0);
+      running += Math.round(dayScore) + (habitPtsPerDay[key] ?? 0) + (taskPtsPerDay[key] ?? 0);
+      cumulativeData.push(running);
+    } else {
+      cumulativeData.push(null);
+    }
+    labels.push(formatDayLabel(cur, false));
+    cur = addDays(cur, 1);
+  }
+
+  const n = labels.length;
+  const paceData = labels.map((_, i) => +(goalPoints * (i + 1) / n).toFixed(1));
+  const yMax = Math.max(goalPoints, running) * 1.05;
+
+  return {
+    grid: { left: 56, right: 16, top: 16, bottom: 64 },
+    tooltip: {
+      trigger: 'axis',
+      formatter: (params: any[]) => {
+        const lines = (params as any[])
+          .filter(p => p.value != null)
+          .map(p => `${p.marker}${p.seriesName}: <b>${Math.round(p.value)} pts</b>`);
+        return `${params[0].axisValue}<br/>${lines.join('<br/>')}`;
+      },
+    },
+    xAxis: {
+      type: 'category',
+      data: labels,
+      axisLabel: { rotate: 40, fontSize: 11 },
+    },
+    yAxis: { type: 'value', name: 'pts', nameTextStyle: { fontSize: 11 }, max: yMax },
+    legend: { bottom: 0, type: 'scroll', textStyle: { fontSize: 11 } },
+    series: [
+      {
+        name: 'Cumulative pts',
+        type: 'line',
+        data: cumulativeData,
+        smooth: true,
+        symbol: 'none',
+        itemStyle: { color: '#4FC3F7' },
+        areaStyle: { color: 'rgba(79,195,247,0.15)' },
+        lineStyle: { width: 2 },
+      },
+      {
+        name: 'Pace',
+        type: 'line',
+        data: paceData,
+        smooth: false,
+        symbol: 'none',
+        lineStyle: { color: '#FF7043', width: 1.5, type: 'dashed' },
+        itemStyle: { color: '#FF7043' },
+      },
+      {
+        name: 'Goal',
+        type: 'line',
+        data: new Array(n).fill(goalPoints),
+        symbol: 'none',
+        lineStyle: { color: '#81C784', width: 1.5, type: 'dotted' },
+        itemStyle: { color: '#81C784' },
+      },
+    ],
   };
 }

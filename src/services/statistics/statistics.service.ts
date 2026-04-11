@@ -4,9 +4,15 @@ import { SessionService } from '../session/session.service';
 import { ProjectsService } from '../projects/projects.service';
 import { HabitsService } from '../habits/habits.service';
 import { CategoriesService } from '../categories/categories.service';
+import { LocalStorageService } from '../local-storage/local-storage.service';
 import {
   TimeRange,
+  KpiSummary,
+  GoalConfig,
   buildChartData,
+  buildKpiSummary,
+  getTaskPtsInRange,
+  toGoalChartOptions,
   toPtsOptions,
   toTimeOptions,
   toFlowScoreTrendOptions,
@@ -28,8 +34,15 @@ export class StatisticsService {
   private readonly projectsService = inject(ProjectsService);
   private readonly habitsService = inject(HabitsService);
   private readonly categoriesService = inject(CategoriesService);
+  private readonly storage = inject(LocalStorageService);
 
   readonly selectedRange = signal<TimeRange>('30d');
+  readonly goal = signal<GoalConfig | null>(this.storage.get('statsGoal') ?? null);
+
+  setGoal(value: GoalConfig | null): void {
+    this.goal.set(value);
+    this.storage.set('statsGoal', value);
+  }
 
   private readonly today = new Date();
 
@@ -44,6 +57,23 @@ export class StatisticsService {
     ),
   );
 
+  readonly kpiSummary = computed<KpiSummary>(() =>
+    buildKpiSummary(
+      this._data(),
+      getTaskPtsInRange(this.projectsService.claimRecords(), this.selectedRange(), this.today),
+    )
+  );
+  readonly goalChartOptions = computed<EChartsCoreOption | null>(() => {
+    const goal = this.goal();
+    if (!goal) return null;
+    return toGoalChartOptions(
+      this.sessionService.records(),
+      this.habitsService.completions(),
+      this.projectsService.claimRecords(),
+      goal,
+      this.today,
+    );
+  });
   readonly ptsChartOptions = computed<EChartsCoreOption>(() => toPtsOptions(this._data()));
   readonly timeChartOptions = computed<EChartsCoreOption>(() => toTimeOptions(this._data()));
   readonly flowScoreTrendOptions = computed<EChartsCoreOption>(() => toFlowScoreTrendOptions(this._data()));

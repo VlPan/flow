@@ -45,6 +45,8 @@ export const STORAGE_REGISTRY = {
   habitGroups: habitGroupsSchema,
   habits: habitsSchema,
   habitCompletions: habitCompletionsSchema,
+  // Statistics
+  statsGoal: z.object({ startDate: z.string(), endDate: z.string(), points: z.number() }).nullable(),
 } satisfies Record<string, ZodType>;
 
 export type StorageRegistry = typeof STORAGE_REGISTRY;

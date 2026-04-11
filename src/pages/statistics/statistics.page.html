@@ -15,6 +15,75 @@
     </mat-button-toggle-group>
   </div>
 
+  <!-- Goal Chart -->
+  <div class="flex flex-col gap-3">
+    <div class="flex items-center justify-between flex-wrap gap-3">
+      <h2 class="text-sm font-medium text-gray-500 uppercase tracking-wide">Goal Chart</h2>
+      <div class="flex items-center gap-2 flex-wrap">
+        <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-36">
+          <mat-label>Start date</mat-label>
+          <input matInput [matDatepicker]="startPicker" [value]="goalStartDate()" (dateChange)="setGoalStart($event.value)" />
+          <mat-datepicker-toggle matIconSuffix [for]="startPicker" />
+          <mat-datepicker #startPicker />
+        </mat-form-field>
+        <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-36">
+          <mat-label>End date</mat-label>
+          <input matInput [matDatepicker]="endPicker" [value]="goalEndDate()" (dateChange)="setGoalEnd($event.value)" [min]="goalStartDate()" />
+          <mat-datepicker-toggle matIconSuffix [for]="endPicker" />
+          <mat-datepicker #endPicker />
+        </mat-form-field>
+        <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-32">
+          <mat-label>Goal (pts)</mat-label>
+          <input matInput type="number" min="1" [value]="goalPoints() ?? ''" (change)="updateGoalPoints($event)" placeholder="e.g. 1000" />
+        </mat-form-field>
+        <button mat-flat-button (click)="applyGoal()">Apply</button>
+        @if (stats.goal()) {
+          <button mat-icon-button (click)="clearGoal()">
+            <mat-icon>close</mat-icon>
+          </button>
+        }
+      </div>
+    </div>
+    @if (stats.goalChartOptions(); as opts) {
+      <div echarts [options]="opts" class="w-full" style="height: 320px;"></div>
+    } @else {
+      <div class="flex items-center justify-center h-24 rounded-xl border border-dashed border-gray-300 dark:border-gray-600 text-gray-400 text-sm">
+        Set a start date, end date and goal to track progress
+      </div>
+    }
+  </div>
+
+  <!-- KPI summary cards -->
+  <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
+    <div class="flex flex-col gap-1 rounded-xl border border-gray-200 dark:border-gray-700 px-5 py-4">
+      <span class="text-xs font-medium text-gray-500 uppercase tracking-wide">Sessions</span>
+      <span class="text-3xl font-bold">{{ stats.kpiSummary().totalSessions }}</span>
+    </div>
+    <div class="flex flex-col gap-1 rounded-xl border border-gray-200 dark:border-gray-700 px-5 py-4">
+      <span class="text-xs font-medium text-gray-500 uppercase tracking-wide">Focused time</span>
+      <span class="text-3xl font-bold">{{ stats.kpiSummary().totalFocusedTime }}</span>
+    </div>
+    <div class="flex flex-col gap-1 rounded-xl border border-gray-200 dark:border-gray-700 px-5 py-4">
+      <span class="text-xs font-medium text-gray-500 uppercase tracking-wide">Avg flow score</span>
+      <span class="text-3xl font-bold">{{ stats.kpiSummary().avgFlowScore }}</span>
+    </div>
+    <div class="flex flex-col gap-1 rounded-xl border border-gray-200 dark:border-gray-700 px-5 py-4">
+      <span class="text-xs font-medium text-gray-500 uppercase tracking-wide">Total points</span>
+      <div class="flex items-center justify-between gap-3">
+        <span class="text-3xl font-bold">{{ stats.kpiSummary().flowPts + stats.kpiSummary().habitPts + stats.kpiSummary().taskPts }}</span>
+        <div class="flex flex-col gap-0.5 text-xs text-gray-500 text-right">
+          <span>Flow: <b class="text-gray-700 dark:text-gray-300">{{ stats.kpiSummary().flowPts }}</b></span>
+          <span>Habits: <b class="text-gray-700 dark:text-gray-300">{{ stats.kpiSummary().habitPts }}</b></span>
+          <span>Tasks: <b class="text-gray-700 dark:text-gray-300">{{ stats.kpiSummary().taskPts }}</b></span>
+        </div>
+      </div>
+    </div>
+    <div class="flex flex-col gap-1 rounded-xl border border-gray-200 dark:border-gray-700 px-5 py-4">
+      <span class="text-xs font-medium text-gray-500 uppercase tracking-wide">Avg session (excl breaks)</span>
+      <span class="text-3xl font-bold">{{ stats.kpiSummary().avgSessionTime }}</span>
+    </div>
+  </div>
+
   <!-- Points chart -->
   <div class="flex flex-col gap-2">
     <h2 class="text-sm font-medium text-gray-500 uppercase tracking-wide">Points per day</h2>
