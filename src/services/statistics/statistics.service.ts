@@ -10,12 +10,16 @@ import {
   toPtsOptions,
   toTimeOptions,
   toFlowScoreTrendOptions,
-  toProjectDonutOptions,
+  toProjectBarOptions,
   toTimeOfDayHeatmapOptions,
   toDayOfWeekOptions,
   toSessionLengthDistOptions,
   toScoreVsLengthOptions,
   toTaskClaimsOptions,
+  toScoreByProjectOptions,
+  toScoreByCategoryOptions,
+  toFlowQualityByProjectOptions,
+  toFlowQualityByCategoryOptions,
 } from '../../utils/statistics.utils';
 
 @Injectable({ providedIn: 'root' })
@@ -43,7 +47,7 @@ export class StatisticsService {
   readonly ptsChartOptions = computed<EChartsCoreOption>(() => toPtsOptions(this._data()));
   readonly timeChartOptions = computed<EChartsCoreOption>(() => toTimeOptions(this._data()));
   readonly flowScoreTrendOptions = computed<EChartsCoreOption>(() => toFlowScoreTrendOptions(this._data()));
-  readonly projectDonutOptions = computed<EChartsCoreOption>(() => toProjectDonutOptions(this._data()));
+  readonly projectBarOptions = computed<EChartsCoreOption>(() => toProjectBarOptions(this._data()));
   readonly timeOfDayHeatmapOptions = computed<EChartsCoreOption>(() => toTimeOfDayHeatmapOptions(this._data()));
   readonly dayOfWeekOptions = computed<EChartsCoreOption>(() => toDayOfWeekOptions(this._data()));
   readonly sessionLengthDistOptions = computed<EChartsCoreOption>(() => toSessionLengthDistOptions(this._data()));
@@ -51,4 +55,8 @@ export class StatisticsService {
   readonly taskClaimsOptions = computed<EChartsCoreOption>(() =>
     toTaskClaimsOptions(this.projectsService.claimRecords(), this.selectedRange(), this.today)
   );
+  readonly scoreByProjectOptions = computed<EChartsCoreOption>(() => toScoreByProjectOptions(this._data()));
+  readonly scoreByCategoryOptions = computed<EChartsCoreOption>(() => toScoreByCategoryOptions(this._data()));
+  readonly flowQualityByProjectOptions = computed<EChartsCoreOption>(() => toFlowQualityByProjectOptions(this._data()));
+  readonly flowQualityByCategoryOptions = computed<EChartsCoreOption>(() => toFlowQualityByCategoryOptions(this._data()));
 }

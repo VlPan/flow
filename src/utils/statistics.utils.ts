@@ -1,7 +1,8 @@
 import { EChartsCoreOption } from 'echarts/core';
 import { SessionRecord } from '../models/session.model';
 import { Project, TaskClaimRecord, DEFAULT_PROJECT_COLOR } from '../models/project.model';
-import { Category, DEFAULT_CATEGORY_COLOR, OTHERS_CATEGORY_ID } from '../models/category.model';
+import { Category, DEFAULT_CATEGORY_COLOR, OTHERS_CATEGORY_ID, OTHERS_CATEGORY } from '../models/category.model';
+import { BREAK_VECTOR, BREAK_VECTOR_ID } from '../models/flow-vector.model';
 import { HabitCompletion } from '../models/habit.model';
 import { calculateSessionScore } from './scoring.utils';
 import { getWeekStart, toLocalDateString } from './date.utils';
@@ -316,7 +317,7 @@ export function toFlowScoreTrendOptions(data: ChartData): EChartsCoreOption {
   };
 }
 
-export function toProjectDonutOptions(data: ChartData): EChartsCoreOption {
+export function toProjectBarOptions(data: ChartData): EChartsCoreOption {
   const { buckets, activeProjects } = data;
 
   const totalByProject: Record<string, number> = {};
@@ -326,27 +327,31 @@ export function toProjectDonutOptions(data: ChartData): EChartsCoreOption {
     }
   }
 
-  const pieData = activeProjects
+  const entries = activeProjects
     .filter(p => (totalByProject[p.id] ?? 0) > 0)
-    .map(p => ({
-      name: `${p.icon} ${p.name}`,
-      value: totalByProject[p.id],
-      itemStyle: { color: p.color || DEFAULT_PROJECT_COLOR },
-    }));
+    .map(p => ({ project: p, minutes: totalByProject[p.id] }))
+    .sort((a, b) => a.minutes - b.minutes);
 
   return {
+    grid: { left: 130, right: 24, top: 16, bottom: 32 },
     tooltip: {
-      trigger: 'item',
-      formatter: (p: any) => `${p.name}<br/><b>${p.value} min</b> (${p.percent}%)`,
+      trigger: 'axis',
+      axisPointer: { type: 'shadow' },
+      formatter: (params: any[]) => `${params[0].axisValue}<br/><b>${params[0].value} min</b>`,
     },
-    legend: { bottom: 0, type: 'scroll', textStyle: { fontSize: 11 } },
+    xAxis: { type: 'value', name: 'min', nameTextStyle: { fontSize: 11 } },
+    yAxis: {
+      type: 'category',
+      data: entries.map(e => `${e.project.icon} ${e.project.name}`),
+      axisLabel: { fontSize: 11 },
+    },
     series: [{
-      type: 'pie',
-      radius: ['40%', '70%'],
-      center: ['50%', '44%'],
-      data: pieData,
-      label: { show: false },
-      emphasis: { label: { show: true, fontSize: 13, fontWeight: 'bold' } },
+      type: 'bar',
+      data: entries.map(e => ({
+        value: e.minutes,
+        itemStyle: { color: e.project.color || DEFAULT_PROJECT_COLOR },
+      })),
+      barMinHeight: 1,
     }],
   };
 }
@@ -527,6 +532,199 @@ export function toScoreVsLengthOptions(data: ChartData): EChartsCoreOption {
       nameTextStyle: { fontSize: 11 },
     },
     series,
+  };
+}
+
+export function toFlowQualityByProjectOptions(data: ChartData): EChartsCoreOption {
+  const { filteredRecords, activeProjects } = data;
+  const projectMap = new Map(activeProjects.map(p => [p.id, p]));
+
+  const weightedScore: Record<string, number> = {};
+  const totalMinutes: Record<string, number> = {};
+  for (const r of filteredRecords) {
+    weightedScore[r.projectId] = (weightedScore[r.projectId] ?? 0) + r.flowScore * r.sessionMinutes;
+    totalMinutes[r.projectId] = (totalMinutes[r.projectId] ?? 0) + r.sessionMinutes;
+  }
+
+  const entries: { label: string; quality: number; color: string }[] = [];
+  for (const [id, mins] of Object.entries(totalMinutes)) {
+    if (mins === 0) continue;
+    const quality = +(weightedScore[id] / mins).toFixed(2);
+    if (id === BREAK_VECTOR_ID) {
+      entries.push({ label: `${BREAK_VECTOR.icon} ${BREAK_VECTOR.name}`, quality, color: BREAK_VECTOR.color });
+    } else {
+      const p = projectMap.get(id);
+      if (p) entries.push({ label: `${p.icon} ${p.name}`, quality, color: p.color || DEFAULT_PROJECT_COLOR });
+    }
+  }
+  entries.sort((a, b) => a.quality - b.quality);
+
+  return {
+    grid: { left: 130, right: 24, top: 16, bottom: 32 },
+    tooltip: {
+      trigger: 'axis',
+      axisPointer: { type: 'shadow' },
+      formatter: (params: any[]) => `${params[0].axisValue}<br/><b>${params[0].value}</b> / 10`,
+    },
+    xAxis: { type: 'value', name: 'avg score', min: 0, max: 10, nameTextStyle: { fontSize: 11 } },
+    yAxis: {
+      type: 'category',
+      data: entries.map(e => e.label),
+      axisLabel: { fontSize: 11 },
+    },
+    series: [{
+      type: 'bar',
+      data: entries.map(e => ({
+        value: e.quality,
+        itemStyle: { color: e.color },
+      })),
+      barMinHeight: 1,
+    }],
+  };
+}
+
+export function toFlowQualityByCategoryOptions(data: ChartData): EChartsCoreOption {
+  const { filteredRecords, activeProjects, activeCategories } = data;
+  const projectToCatId = new Map(activeProjects.map(p => [p.id, p.categoryId ?? OTHERS_CATEGORY_ID]));
+
+  const weightedScore: Record<string, number> = {};
+  const totalMinutes: Record<string, number> = {};
+  for (const r of filteredRecords) {
+    const catId = r.projectId === BREAK_VECTOR_ID
+      ? OTHERS_CATEGORY_ID
+      : (projectToCatId.get(r.projectId) ?? OTHERS_CATEGORY_ID);
+    weightedScore[catId] = (weightedScore[catId] ?? 0) + r.flowScore * r.sessionMinutes;
+    totalMinutes[catId] = (totalMinutes[catId] ?? 0) + r.sessionMinutes;
+  }
+
+  const allCategories = [...activeCategories];
+  if ((totalMinutes[OTHERS_CATEGORY_ID] ?? 0) > 0 && !allCategories.find(c => c.id === OTHERS_CATEGORY_ID)) {
+    allCategories.push(OTHERS_CATEGORY);
+  }
+
+  const entries = allCategories
+    .filter(c => (totalMinutes[c.id] ?? 0) > 0)
+    .map(c => ({ category: c, quality: +(weightedScore[c.id] / totalMinutes[c.id]).toFixed(2) }))
+    .sort((a, b) => a.quality - b.quality);
+
+  return {
+    grid: { left: 130, right: 24, top: 16, bottom: 32 },
+    tooltip: {
+      trigger: 'axis',
+      axisPointer: { type: 'shadow' },
+      formatter: (params: any[]) => `${params[0].axisValue}<br/><b>${params[0].value}</b> / 10`,
+    },
+    xAxis: { type: 'value', name: 'avg score', min: 0, max: 10, nameTextStyle: { fontSize: 11 } },
+    yAxis: {
+      type: 'category',
+      data: entries.map(e => e.category.name),
+      axisLabel: { fontSize: 11 },
+    },
+    series: [{
+      type: 'bar',
+      data: entries.map(e => ({
+        value: e.quality,
+        itemStyle: { color: e.category.color || DEFAULT_CATEGORY_COLOR },
+      })),
+      barMinHeight: 1,
+    }],
+  };
+}
+
+export function toScoreByProjectOptions(data: ChartData): EChartsCoreOption {
+  const { filteredRecords, activeProjects } = data;
+  const projectMap = new Map(activeProjects.map(p => [p.id, p]));
+
+  const totalScore: Record<string, number> = {};
+  const sessionCount: Record<string, number> = {};
+  for (const r of filteredRecords) {
+    totalScore[r.projectId] = (totalScore[r.projectId] ?? 0) + calculateSessionScore(r.sessionMinutes, r.flowScore);
+    sessionCount[r.projectId] = (sessionCount[r.projectId] ?? 0) + 1;
+  }
+
+  const entries: { label: string; score: number; color: string }[] = [];
+  for (const [id, count] of Object.entries(sessionCount)) {
+    if (count === 0) continue;
+    const score = +(totalScore[id] / count).toFixed(2);
+    if (id === BREAK_VECTOR_ID) {
+      entries.push({ label: `${BREAK_VECTOR.icon} ${BREAK_VECTOR.name}`, score, color: BREAK_VECTOR.color });
+    } else {
+      const p = projectMap.get(id);
+      if (p) entries.push({ label: `${p.icon} ${p.name}`, score, color: p.color || DEFAULT_PROJECT_COLOR });
+    }
+  }
+  entries.sort((a, b) => a.score - b.score);
+
+  return {
+    grid: { left: 130, right: 24, top: 16, bottom: 32 },
+    tooltip: {
+      trigger: 'axis',
+      axisPointer: { type: 'shadow' },
+      formatter: (params: any[]) => `${params[0].axisValue}<br/><b>${params[0].value} pts/session</b>`,
+    },
+    xAxis: { type: 'value', name: 'avg pts/session', nameTextStyle: { fontSize: 11 } },
+    yAxis: {
+      type: 'category',
+      data: entries.map(e => e.label),
+      axisLabel: { fontSize: 11 },
+    },
+    series: [{
+      type: 'bar',
+      data: entries.map(e => ({
+        value: e.score,
+        itemStyle: { color: e.color },
+      })),
+      barMinHeight: 1,
+    }],
+  };
+}
+
+export function toScoreByCategoryOptions(data: ChartData): EChartsCoreOption {
+  const { filteredRecords, activeProjects, activeCategories } = data;
+
+  const projectToCatId = new Map(activeProjects.map(p => [p.id, p.categoryId ?? OTHERS_CATEGORY_ID]));
+
+  const totalScore: Record<string, number> = {};
+  const sessionCount: Record<string, number> = {};
+  for (const r of filteredRecords) {
+    const catId = r.projectId === BREAK_VECTOR_ID
+      ? OTHERS_CATEGORY_ID
+      : (projectToCatId.get(r.projectId) ?? OTHERS_CATEGORY_ID);
+    totalScore[catId] = (totalScore[catId] ?? 0) + calculateSessionScore(r.sessionMinutes, r.flowScore);
+    sessionCount[catId] = (sessionCount[catId] ?? 0) + 1;
+  }
+
+  const allCategories = [...activeCategories];
+  if ((sessionCount[OTHERS_CATEGORY_ID] ?? 0) > 0 && !allCategories.find(c => c.id === OTHERS_CATEGORY_ID)) {
+    allCategories.push(OTHERS_CATEGORY);
+  }
+
+  const entries = allCategories
+    .filter(c => (sessionCount[c.id] ?? 0) > 0)
+    .map(c => ({ category: c, score: +(totalScore[c.id] / sessionCount[c.id]).toFixed(2) }))
+    .sort((a, b) => a.score - b.score);
+
+  return {
+    grid: { left: 130, right: 24, top: 16, bottom: 32 },
+    tooltip: {
+      trigger: 'axis',
+      axisPointer: { type: 'shadow' },
+      formatter: (params: any[]) => `${params[0].axisValue}<br/><b>${params[0].value} pts/session</b>`,
+    },
+    xAxis: { type: 'value', name: 'avg pts/session', nameTextStyle: { fontSize: 11 } },
+    yAxis: {
+      type: 'category',
+      data: entries.map(e => e.category.name),
+      axisLabel: { fontSize: 11 },
+    },
+    series: [{
+      type: 'bar',
+      data: entries.map(e => ({
+        value: e.score,
+        itemStyle: { color: e.category.color || DEFAULT_CATEGORY_COLOR },
+      })),
+      barMinHeight: 1,
+    }],
   };
 }
 

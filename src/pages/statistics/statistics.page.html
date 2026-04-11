@@ -65,7 +65,7 @@
       <h2 class="text-sm font-medium text-gray-500 uppercase tracking-wide">Time by project</h2>
       <div
         echarts
-        [options]="stats.projectDonutOptions()"
+        [options]="stats.projectBarOptions()"
         class="w-full"
         style="height: 320px;"
       ></div>
@@ -77,6 +77,50 @@
         [options]="stats.dayOfWeekOptions()"
         class="w-full"
         style="height: 320px;"
+      ></div>
+    </div>
+  </div>
+
+  <!-- Two-column row: score by project + score by category -->
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <div class="flex flex-col gap-2">
+      <h2 class="text-sm font-medium text-gray-500 uppercase tracking-wide">Flow score by project</h2>
+      <div
+        echarts
+        [options]="stats.scoreByProjectOptions()"
+        class="w-full"
+        style="height: 300px;"
+      ></div>
+    </div>
+    <div class="flex flex-col gap-2">
+      <h2 class="text-sm font-medium text-gray-500 uppercase tracking-wide">Flow score by category</h2>
+      <div
+        echarts
+        [options]="stats.scoreByCategoryOptions()"
+        class="w-full"
+        style="height: 300px;"
+      ></div>
+    </div>
+  </div>
+
+  <!-- Two-column row: flow quality by project + flow quality by category -->
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <div class="flex flex-col gap-2">
+      <h2 class="text-sm font-medium text-gray-500 uppercase tracking-wide">Flow quality by project</h2>
+      <div
+        echarts
+        [options]="stats.flowQualityByProjectOptions()"
+        class="w-full"
+        style="height: 300px;"
+      ></div>
+    </div>
+    <div class="flex flex-col gap-2">
+      <h2 class="text-sm font-medium text-gray-500 uppercase tracking-wide">Flow quality by category</h2>
+      <div
+        echarts
+        [options]="stats.flowQualityByCategoryOptions()"
+        class="w-full"
+        style="height: 300px;"
       ></div>
     </div>
   </div>
