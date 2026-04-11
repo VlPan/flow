@@ -104,31 +104,10 @@
   padding: 4px 8px;
 }
 
-.drag-handle {
-  cursor: grab;
-  color: rgba(0,0,0,0.4);
-  flex-shrink: 0;
-  margin-bottom: 15px;
-}
-
 .task-name-field {
   flex: 1;
 }
 
 .pts-field {
   width: 80px;
-}
-
-.cdk-drag-preview {
-  background: white;
-  box-shadow: 0 4px 16px rgba(0,0,0,0.15);
-  border-radius: 6px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 4px 8px;
-}
-
-.cdk-drag-placeholder {
-  opacity: 0.3;
 }

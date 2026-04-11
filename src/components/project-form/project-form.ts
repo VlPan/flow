@@ -15,7 +15,6 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatSelectModule } from '@angular/material/select';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule, provideNativeDateAdapter } from '@angular/material/core';
-import { CdkDropList, CdkDrag, CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
 import { ColorCompactModule } from 'ngx-color/compact';
 import { Project, DEFAULT_PROJECT_COLOR, DEFAULT_PROJECT_ICON } from '../../models/project.model';
 import { CategoriesService } from '../../services/categories/categories.service';
@@ -36,8 +35,6 @@ import { toLocalDateString } from '../../utils/date.utils';
     MatSelectModule,
     MatDatepickerModule,
     MatNativeDateModule,
-    CdkDropList,
-    CdkDrag,
     ColorCompactModule,
   ],
   templateUrl: './project-form.html',
@@ -103,13 +100,6 @@ export class ProjectForm {
 
   protected removeTask(i: number): void {
     this.tasks.removeAt(i);
-  }
-
-  protected onDrop(event: CdkDragDrop<AbstractControl[]>): void {
-    if (event.previousIndex === event.currentIndex) return;
-    const arr = this.tasks.controls as FormGroup[];
-    moveItemInArray(arr, event.previousIndex, event.currentIndex);
-    this.tasks.setValue(arr.map(g => g.getRawValue()));
   }
 
   protected onColorChange(event: { color: { hex: string } }): void {
