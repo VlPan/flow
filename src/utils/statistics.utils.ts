@@ -193,6 +193,7 @@ export interface KpiSummary {
   flowPts: number;
   habitPts: number;
   taskPts: number;
+  avgPtsPerDay: string;
 }
 
 function formatMinutes(minutes: number): string {
@@ -233,6 +234,9 @@ export function buildKpiSummary(data: ChartData, taskPts: number): KpiSummary {
     : '—';
   const flowPts = buckets.reduce((sum, b) => sum + b.score, 0);
   const habitPts = buckets.reduce((sum, b) => sum + b.habitPts, 0);
+  const nonEmptyDays = buckets.filter(b => b.score + b.habitPts > 0).length;
+  const totalPts = flowPts + habitPts + taskPts;
+  const avgPtsPerDay = nonEmptyDays > 0 ? (totalPts / nonEmptyDays).toFixed(1) : '—';
   return {
     totalSessions: filteredRecords.length,
     totalFocusedTime: formatMinutes(totalMinutes),
@@ -241,6 +245,7 @@ export function buildKpiSummary(data: ChartData, taskPts: number): KpiSummary {
     flowPts,
     habitPts,
     taskPts,
+    avgPtsPerDay,
   };
 }
 

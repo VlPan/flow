@@ -54,7 +54,7 @@
   </div>
 
   <!-- KPI summary cards -->
-  <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
+  <div class="grid grid-cols-2 md:grid-cols-6 gap-4">
     <div class="flex flex-col gap-1 rounded-xl border border-gray-200 dark:border-gray-700 px-5 py-4">
       <span class="text-xs font-medium text-gray-500 uppercase tracking-wide">Sessions</span>
       <span class="text-3xl font-bold">{{ stats.kpiSummary().totalSessions }}</span>
@@ -77,6 +77,10 @@
           <span>Tasks: <b class="text-gray-700 dark:text-gray-300">{{ stats.kpiSummary().taskPts }}</b></span>
         </div>
       </div>
+    </div>
+    <div class="flex flex-col gap-1 rounded-xl border border-gray-200 dark:border-gray-700 px-5 py-4">
+      <span class="text-xs font-medium text-gray-500 uppercase tracking-wide">Avg pts / day</span>
+      <span class="text-3xl font-bold">{{ stats.kpiSummary().avgPtsPerDay }}</span>
     </div>
     <div class="flex flex-col gap-1 rounded-xl border border-gray-200 dark:border-gray-700 px-5 py-4">
       <span class="text-xs font-medium text-gray-500 uppercase tracking-wide">Avg session (excl breaks)</span>
