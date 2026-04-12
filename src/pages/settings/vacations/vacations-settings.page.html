@@ -1,0 +1,76 @@
+<div class="subpage">
+  <h2 class="subpage-title">Vacation Settings</h2>
+  <p class="subpage-description">Configure how vacation days are earned automatically</p>
+
+  <div class="settings-list">
+
+    <!-- Mon–Sat streak toggle -->
+    <div class="setting-row">
+      <div class="setting-info">
+        <div class="setting-label-row">
+          <span class="setting-label">Weekly streak reward</span>
+          <mat-icon
+            class="help-icon"
+            [matTooltip]="'When enabled, you earn a vacation day every Sunday if you tracked at least 5 out of 6 days (Mon–Sat) that week.'"
+            matTooltipPosition="right"
+          >help_outline</mat-icon>
+        </div>
+        <span class="setting-hint">Earn a vacation day each Sunday for a full tracking week</span>
+      </div>
+      <mat-slide-toggle
+        [checked]="vacationService.streakEnabled()"
+        (change)="vacationService.setStreakEnabled($event.checked)"
+      />
+    </div>
+
+    <!-- Chance divisor -->
+    <div class="setting-row">
+      <div class="setting-info">
+        <div class="setting-label-row">
+          <span class="setting-label">Random chance divisor</span>
+          <mat-icon
+            class="help-icon"
+            [matTooltip]="'Controls how often you randomly earn a vacation day on habit, session, or task completion. Formula: P = points ÷ divisor. Higher divisor = lower chance. Default: 10000.'"
+            matTooltipPosition="right"
+          >help_outline</mat-icon>
+        </div>
+        <span class="setting-hint">
+          A session earning 200 pts has {{ (200 / vacationService.chanceDivisor() * 100).toFixed(2) }}% chance (capped at {{ vacationService.maxChancePct() }}%)
+        </span>
+      </div>
+      <mat-form-field appearance="outline" class="number-field">
+        <input
+          matInput
+          type="number"
+          min="100"
+          step="100"
+          [ngModel]="vacationService.chanceDivisor()"
+          (ngModelChange)="vacationService.setChanceDivisor(+$event)"
+        />
+      </mat-form-field>
+    </div>
+
+    <!-- Max chance % -->
+    <div class="setting-row">
+      <div class="setting-info">
+        <div class="setting-label-row">
+          <span class="setting-label">Max random chance</span>
+          <mat-icon
+            class="help-icon"
+            [matTooltip]="'The maximum probability cap for earning a vacation day from a single completion, regardless of points earned. Default: 5%.'"
+            matTooltipPosition="right"
+          >help_outline</mat-icon>
+        </div>
+        <span class="setting-hint">No single completion can exceed {{ vacationService.maxChancePct() }}% chance</span>
+      </div>
+      <mat-slider min="1" max="20" step="1" [discrete]="true">
+        <input
+          matSliderThumb
+          [value]="vacationService.maxChancePct()"
+          (valueChange)="vacationService.setMaxChancePct($event)"
+        />
+      </mat-slider>
+    </div>
+
+  </div>
+</div>

@@ -5,6 +5,7 @@ import { CdkDropList, CdkDrag, CdkDragDrop, moveItemInArray } from '@angular/cdk
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { MatMenuModule } from '@angular/material/menu';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { DateService } from '../../services/date/date.service';
 import { WeeklyDatePicker } from '../weekly-date-picker/weekly-date-picker';
 import { FlowPlanningRow } from '../flow-planning-row/flow-planning-row';
@@ -20,6 +21,11 @@ import { ProjectsService } from '../../services/projects/projects.service';
 import { SessionService } from '../../services/session/session.service';
 import { SessionSettingsService } from '../../services/session-settings/session-settings.service';
 import { BalanceService } from '../../services/balance/balance.service';
+import { VacationService } from '../../services/vacation/vacation.service';
+import {
+  DeclareVacationDialog,
+  DeclareVacationDialogResult,
+} from '../declare-vacation-dialog/declare-vacation-dialog';
 import { PlanningRow } from '../../models/planning-row.model';
 import { Project } from '../../models/project.model';
 import { BREAK_VECTOR } from '../../models/flow-vector.model';
@@ -30,7 +36,7 @@ import { calculateSessionScore } from '../../utils/scoring.utils';
 @Component({
   selector: 'app-flow-planning',
   standalone: true,
-  imports: [DatePipe, WeeklyDatePicker, FlowPlanningRow, MatIconModule, MatButtonModule, MatMenuModule, CdkDropList, CdkDrag],
+  imports: [DatePipe, WeeklyDatePicker, FlowPlanningRow, MatIconModule, MatButtonModule, MatMenuModule, MatTooltipModule, CdkDropList, CdkDrag],
   templateUrl: './flow-planning.html',
   styleUrl: './flow-planning.css',
 })
@@ -41,6 +47,7 @@ export class FlowPlanning {
   private readonly planningRowService = inject(PlanningRowService);
   private readonly projectsService = inject(ProjectsService);
   private readonly balanceService = inject(BalanceService);
+  readonly vacationService = inject(VacationService);
   private readonly dialog = inject(MatDialog);
 
   private readonly projectsMap = computed(() => {
@@ -69,10 +76,31 @@ export class FlowPlanning {
     toLocalDateString(this.dateService.selectedDay()) === toLocalDateString(this.dateService.today)
   );
 
+  protected readonly isSelectedDayVacation = computed(() =>
+    this.vacationService.isVacationDay(toLocalDateString(this.dateService.selectedDay()))
+  );
+
   protected readonly quickPickProjects = computed(() => {
     if (this.sessionService.activeSession()) return [];
     return this.projectsService.projects();
   });
+
+  protected readonly canDeclareVacation = computed(() =>
+    this.vacationService.vacationBalance() > 0
+  );
+
+  protected openDeclareVacationDialog(): void {
+    this.dialog
+      .open(DeclareVacationDialog, {
+        width: '480px',
+        data: { defaultDate: this.dateService.selectedDay() },
+      })
+      .afterClosed()
+      .subscribe((result?: DeclareVacationDialogResult) => {
+        if (!result) return;
+        this.vacationService.declareVacation(result.startDate, result.endDate);
+      });
+  }
 
   protected moveToNextDay(): void {
     const selected = this.dateService.selectedDay();
@@ -265,9 +293,9 @@ export class FlowPlanning {
         if (!result) return;
         const rowId = session.planningRowId;
         this.sessionService.complete(result.sessionMinutes, result.flowScore, result.shortDescription);
-        this.balanceService.addSessionPoints(
-          calculateSessionScore(result.sessionMinutes, result.flowScore)
-        );
+        const sessionPts = calculateSessionScore(result.sessionMinutes, result.flowScore);
+        this.balanceService.addSessionPoints(sessionPts);
+        this.vacationService.checkRandomChance(Math.round(sessionPts));
         this.planningRowService.delete(rowId);
       });
   }

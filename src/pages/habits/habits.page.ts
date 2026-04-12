@@ -10,6 +10,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { DecimalPipe } from '@angular/common';
 import { CdkDropList, CdkDrag, CdkDragHandle, CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
 import { HabitsService, OTHERS_GROUP_ID } from '../../services/habits/habits.service';
+import { VacationService } from '../../services/vacation/vacation.service';
 import { ConfirmDialog } from '../../components/confirm-dialog/confirm-dialog';
 import { HabitGroupForm } from '../../components/habit-group-form/habit-group-form';
 import { HabitForm } from '../../components/habit-form/habit-form';
@@ -21,6 +22,7 @@ import { ClaimMasteryDialog } from '../../components/claim-mastery-dialog/claim-
 import { CompletionScoreDialog } from '../../components/completion-score-dialog/completion-score-dialog';
 import { Habit, HabitGroup } from '../../models/habit.model';
 import { getCompletionScoreEmoji, getLastNDays } from '../../utils/habit.utils';
+import { toLocalDateString } from '../../utils/date.utils';
 
 @Component({
   selector: 'app-habits-page',
@@ -43,6 +45,7 @@ import { getCompletionScoreEmoji, getLastNDays } from '../../utils/habit.utils';
 })
 export class HabitsPage {
   protected readonly habits = inject(HabitsService);
+  protected readonly vacationService = inject(VacationService);
   private readonly dialog = inject(MatDialog);
 
   protected readonly othersGroupId = OTHERS_GROUP_ID;
@@ -61,6 +64,10 @@ export class HabitsPage {
   protected readonly sortedGroupsForArchive = computed(() =>
     this.sortedGroups().filter(g => (this.habits.archivedHabitsByGroup()[g.id] ?? []).length > 0),
   );
+
+  protected isVacationDay(dateStr: string): boolean {
+    return this.vacationService.isVacationDay(dateStr);
+  }
 
   protected dayLabel(dateStr: string): string {
     const date = new Date(dateStr + 'T00:00:00');
@@ -91,6 +98,10 @@ export class HabitsPage {
   }
 
   protected toggleHabitCompletion(habit: Habit, date: string): void {
+    // Block new completions on vacation days (allow unchecking existing ones)
+    if (this.vacationService.isVacationDay(date) && !this.habits.isCompleted(habit.id, date)) {
+      return;
+    }
     if (this.habits.isCompleted(habit.id, date)) {
       this.habits.toggleCompletion(habit.id, date);
       return;

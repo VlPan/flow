@@ -97,6 +97,17 @@
   opacity: 0.45;
 }
 
+/* Vacation day */
+.day-btn.is-vacation:not(.is-selected) {
+  border-color: #9575CD;
+  color: #9575CD;
+}
+
+.day-btn.is-vacation.is-selected {
+  background-color: #9575CD;
+  border-color: #9575CD;
+}
+
 /* Today chip */
 .today-chip-row {
   display: flex;

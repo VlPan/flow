@@ -10,13 +10,15 @@ function addDays(date: Date, days: number): Date {
 /**
  * Calculates the current stick count for a habit.
  * Sticks = individual completions in the current streak chain, capped at 7.
- * A chain breaks when a completed Mon–Sun week has fewer completions than frequency.
+ * A chain breaks when a completed Mon–Sun week has fewer completions than
+ * (frequency - vacationDaysInWeek).
  */
 export function calculateSticks(
   habitId: string,
   completions: HabitCompletion[],
   habit: Habit,
   today: Date,
+  vacationDays: Set<string> = new Set(),
 ): number {
   const habitCompletions = completions.filter(c => c.habitId === habitId);
   if (habitCompletions.length === 0) return 0;
@@ -45,7 +47,16 @@ export function calculateSticks(
       c => c.date >= weekStartStr && c.date <= weekEndStr,
     ).length;
 
-    if (weekCompletions < habit.frequency) break; // chain broken
+    // Count vacation days in this week
+    let vacDaysInWeek = 0;
+    let cur = new Date(weekStart);
+    while (toLocalDateString(cur) <= weekEndStr) {
+      if (vacationDays.has(toLocalDateString(cur))) vacDaysInWeek++;
+      cur.setDate(cur.getDate() + 1);
+    }
+
+    const requiredCompletions = Math.max(0, habit.frequency - vacDaysInWeek);
+    if (weekCompletions < requiredCompletions) break; // chain broken
 
     sticks += weekCompletions;
     weekStart = addDays(weekStart, -7);
@@ -56,13 +67,14 @@ export function calculateSticks(
 
 /**
  * Calculates mastery progress for a habit.
- * Window: last 120 days or since creation, whichever is shorter.
- * Mastered when actual completions >= frequency × (windowDays / 7) × 0.9
+ * Window: last 120 days (minus vacation days) or since creation, whichever is shorter.
+ * Mastered when actual completions >= frequency × (effectiveDays / 7) × 0.9
  */
 export function calculateMasteryProgress(
   habit: Habit,
   completions: HabitCompletion[],
   today: Date,
+  vacationDays: Set<string> = new Set(),
 ): { percent: number; isMastered: boolean } {
   const todayStr = toLocalDateString(today);
   const createdDate = new Date(habit.createdDate + 'T00:00:00');
@@ -74,11 +86,22 @@ export function calculateMasteryProgress(
     (todayMidnight.getTime() - createdDate.getTime()) / (1000 * 60 * 60 * 24),
   );
 
-  const windowDays = Math.min(daysSinceCreation, 120);
-  if (windowDays < 60) return { percent: 0, isMastered: false };
+  const rawWindowDays = Math.min(daysSinceCreation, 120);
+  if (rawWindowDays < 60) return { percent: 0, isMastered: false };
 
-  const windowStart = addDays(todayMidnight, -windowDays);
+  const windowStart = addDays(todayMidnight, -rawWindowDays);
   const windowStartStr = toLocalDateString(windowStart);
+
+  // Count vacation days in the window to shrink effective window
+  let vacDaysInWindow = 0;
+  let cur = new Date(windowStart);
+  while (toLocalDateString(cur) <= todayStr) {
+    if (vacationDays.has(toLocalDateString(cur))) vacDaysInWindow++;
+    cur.setDate(cur.getDate() + 1);
+  }
+
+  const windowDays = rawWindowDays - vacDaysInWindow;
+  if (windowDays < 60) return { percent: 0, isMastered: false };
 
   const expected = habit.frequency * (windowDays / 7);
   const threshold = expected * 0.9;

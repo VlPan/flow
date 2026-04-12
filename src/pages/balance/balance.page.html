@@ -1,5 +1,42 @@
 <div class="balance-page">
 
+  <!-- Vacations Panel -->
+  <div class="vacations-panel">
+    <div class="vacation-header">
+      <div class="vacation-title-row">
+        <mat-icon class="vacation-icon">beach_access</mat-icon>
+        <span class="vacation-title">Vacations</span>
+      </div>
+      <div class="vacation-balance">
+        <span class="vacation-count">{{ vacationService.vacationBalance() }}</span>
+        <span class="vacation-unit">days</span>
+      </div>
+      <div class="vacation-actions">
+        <button mat-icon-button class="adjust-btn add-btn" (click)="adjustVacation('add')" title="Add vacation days">
+          <mat-icon>add</mat-icon>
+        </button>
+        <button mat-icon-button class="adjust-btn remove-btn" (click)="adjustVacation('remove')" title="Remove vacation days">
+          <mat-icon>remove</mat-icon>
+        </button>
+      </div>
+    </div>
+
+    @if (vacationService.pendingRecords().length > 0) {
+      <div class="pending-vacations">
+        @for (record of vacationService.pendingRecords(); track record.id) {
+          <div class="pending-row">
+            <mat-icon style="color:#9575CD;font-size:16px;width:16px;height:16px">beach_access</mat-icon>
+            <span class="pending-date">
+              {{ record.startDate === record.endDate ? (record.startDate | date:'MMM d') : ((record.startDate | date:'MMM d') + ' – ' + (record.endDate | date:'MMM d')) }}
+            </span>
+            <span class="pending-pts">+{{ record.ptsAwarded }} pts</span>
+            <button mat-button class="undo-btn" (click)="undoVacation(record.id)">Undo</button>
+          </div>
+        }
+      </div>
+    }
+  </div>
+
   <!-- Exchange Panel -->
   <div class="exchange-panel">
     <div class="balance-side">
@@ -82,5 +119,30 @@
       }
     </div>
   </div>
+
+  <!-- Vacation Transaction History -->
+  @if (vacationService.vacationTransactions().length > 0) {
+    <div class="vacation-history-section">
+      <div class="section-header">
+        <h2 class="section-title">Vacation History</h2>
+      </div>
+      <div class="vacation-history-list">
+        @for (tx of vacationService.vacationTransactions().slice().reverse(); track tx.id) {
+          <div class="history-row">
+            <div class="history-info">
+              <span class="history-label">{{ transactionLabel(tx.type) }}</span>
+              @if (tx.note) {
+                <span class="history-note">{{ tx.note }}</span>
+              }
+              <span class="history-date">{{ tx.date | date:'MMM d, y' }}</span>
+            </div>
+            <span class="history-amount" [style.color]="transactionColor(tx.amount)">
+              {{ tx.amount > 0 ? '+' : '' }}{{ tx.amount }}d
+            </span>
+          </div>
+        }
+      </div>
+    </div>
+  }
 
 </div>

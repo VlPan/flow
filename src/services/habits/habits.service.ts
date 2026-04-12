@@ -3,6 +3,7 @@ import { EChartsCoreOption } from 'echarts/core';
 import { v4 as uuidv4 } from 'uuid';
 import { LocalStorageService } from '../local-storage/local-storage.service';
 import { BalanceService } from '../balance/balance.service';
+import { VacationService } from '../vacation/vacation.service';
 import { Habit, HabitCompletion, HabitGroup } from '../../models/habit.model';
 import {
   calculateMasteryProgress,
@@ -25,6 +26,7 @@ const OTHERS_GROUP: HabitGroup = {
 export class HabitsService {
   private readonly storage = inject(LocalStorageService);
   private readonly balance = inject(BalanceService);
+  readonly vacationService = inject(VacationService);
 
   private readonly _groups = signal<HabitGroup[]>(this.storage.get('habitGroups') ?? []);
   private readonly _habits = signal<Habit[]>(this.storage.get('habits') ?? []);
@@ -180,7 +182,7 @@ export class HabitsService {
       const habit = this._habits().find(h => h.id === habitId);
       if (!habit || habit.isMastered) return;
 
-      const sticks = calculateSticks(habitId, this._completions(), habit, new Date(date + 'T00:00:00'));
+      const sticks = calculateSticks(habitId, this._completions(), habit, new Date(date + 'T00:00:00'), this.vacationService.vacationDays());
       const pointsEarned = Math.round(habit.basePoints * (1 + sticks * 0.1));
 
       const completion: HabitCompletion = { id: uuidv4(), habitId, date, pointsEarned };
@@ -188,6 +190,7 @@ export class HabitsService {
       this.storage.set('habitCompletions', this._completions());
 
       this.balance.addSessionPoints(pointsEarned);
+      this.vacationService.checkRandomChance(pointsEarned);
       this.evaluateMastery(habitId);
     }
   }
@@ -195,11 +198,11 @@ export class HabitsService {
   getSticks(habitId: string, referenceDate?: Date): number {
     const habit = this._habits().find(h => h.id === habitId);
     if (!habit) return 0;
-    return calculateSticks(habitId, this._completions(), habit, referenceDate ?? new Date());
+    return calculateSticks(habitId, this._completions(), habit, referenceDate ?? new Date(), this.vacationService.vacationDays());
   }
 
   getMasteryProgress(habit: Habit): { percent: number; isMastered: boolean } {
-    return calculateMasteryProgress(habit, this._completions(), new Date());
+    return calculateMasteryProgress(habit, this._completions(), new Date(), this.vacationService.vacationDays());
   }
 
   isCompleted(habitId: string, date: string): boolean {
@@ -215,7 +218,7 @@ export class HabitsService {
     if (!habit || habit.isMastered) return;
     if (this._completions().some(c => c.habitId === habitId && c.date === date)) return;
 
-    const sticks = calculateSticks(habitId, this._completions(), habit, new Date(date + 'T00:00:00'));
+    const sticks = calculateSticks(habitId, this._completions(), habit, new Date(date + 'T00:00:00'), this.vacationService.vacationDays());
     const scoreMultiplier = getCompletionScoreMultiplier(completionScore);
     const pointsEarned = Math.round(habit.basePoints * scoreMultiplier * (1 + sticks * 0.1));
 
@@ -224,6 +227,7 @@ export class HabitsService {
     this.storage.set('habitCompletions', this._completions());
 
     this.balance.addSessionPoints(pointsEarned);
+    this.vacationService.checkRandomChance(pointsEarned);
     this.evaluateMastery(habitId);
   }
 
@@ -288,7 +292,7 @@ export class HabitsService {
     const habit = this._habits().find(h => h.id === habitId);
     if (!habit || habit.isMastered) return;
 
-    const { isMastered } = calculateMasteryProgress(habit, this._completions(), new Date());
+    const { isMastered } = calculateMasteryProgress(habit, this._completions(), new Date(), this.vacationService.vacationDays());
     if (isMastered) {
       this.updateHabit(habitId, { isMastered: true });
     }

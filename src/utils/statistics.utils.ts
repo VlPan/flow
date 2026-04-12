@@ -4,6 +4,7 @@ import { Project, TaskClaimRecord, DEFAULT_PROJECT_COLOR } from '../models/proje
 import { Category, DEFAULT_CATEGORY_COLOR, OTHERS_CATEGORY_ID, OTHERS_CATEGORY } from '../models/category.model';
 import { BREAK_VECTOR, BREAK_VECTOR_ID } from '../models/flow-vector.model';
 import { HabitCompletion } from '../models/habit.model';
+import { VacationRecord } from '../models/vacation.model';
 import { calculateSessionScore } from './scoring.utils';
 import { getWeekStart, toLocalDateString } from './date.utils';
 import { getHabitPointsPerDay } from './habit.utils';
@@ -18,6 +19,7 @@ interface Bucket {
   label: string;
   score: number;
   habitPts: number;
+  vacationPts: number;
   minutesByVector: Record<string, number>;
   minutesByCategory: Record<string, number>;
 }
@@ -28,6 +30,7 @@ export interface ChartData {
   activeCategories: Category[];
   isWeekly: boolean;
   filteredRecords: SessionRecord[];
+  vacationDaySet: Set<string>;
 }
 
 // ── Internal helpers ──────────────────────────────────────────────────────────
@@ -73,6 +76,7 @@ function buildDailyBuckets(
   showWeekday: boolean,
   habitPtsPerDay: Record<string, number>,
   vectorToCategoryId: Record<string, string>,
+  vacationPtsPerDay: Record<string, number> = {},
 ): Bucket[] {
   const byDate = new Map<string, SessionRecord[]>();
   for (const r of records) {
@@ -89,7 +93,8 @@ function buildDailyBuckets(
     const key = toLocalDateString(cur);
     const { score, minutesByVector, minutesByCategory } = calcBucket(byDate.get(key) ?? [], vectorToCategoryId);
     const habitPts = habitPtsPerDay[key] ?? 0;
-    buckets.push({ key, label: formatDayLabel(cur, showWeekday), score, habitPts, minutesByVector, minutesByCategory });
+    const vacationPts = vacationPtsPerDay[key] ?? 0;
+    buckets.push({ key, label: formatDayLabel(cur, showWeekday), score, habitPts, vacationPts, minutesByVector, minutesByCategory });
     cur = addDays(cur, 1);
   }
   return buckets;
@@ -101,6 +106,7 @@ function buildWeeklyBuckets(
   end: Date,
   habitPtsPerDay: Record<string, number>,
   vectorToCategoryId: Record<string, string>,
+  vacationPtsPerDay: Record<string, number> = {},
 ): Bucket[] {
   const buckets: Bucket[] = [];
   let weekStart = normDate(getWeekStart(start));
@@ -116,13 +122,44 @@ function buildWeeklyBuckets(
     const habitPts = Object.entries(habitPtsPerDay)
       .filter(([d]) => d >= wsStr && d <= weStr)
       .reduce((sum, [, pts]) => sum + pts, 0);
-    buckets.push({ key: wsStr, label, score, habitPts, minutesByVector, minutesByCategory });
+    const vacationPts = Object.entries(vacationPtsPerDay)
+      .filter(([d]) => d >= wsStr && d <= weStr)
+      .reduce((sum, [, pts]) => sum + pts, 0);
+    buckets.push({ key: wsStr, label, score, habitPts, vacationPts, minutesByVector, minutesByCategory });
     weekStart = addDays(weekStart, 7);
   }
   return buckets;
 }
 
 // ── Public API ────────────────────────────────────────────────────────────────
+
+export function buildVacationPtsPerDay(
+  vacationRecords: VacationRecord[],
+  startStr: string,
+  endStr: string,
+): Record<string, number> {
+  const result: Record<string, number> = {};
+  for (const r of vacationRecords) {
+    if (r.status === 'cancelled') continue;
+    let cur = new Date(r.startDate + 'T00:00:00');
+    const end = new Date(r.endDate + 'T00:00:00');
+    while (toLocalDateString(cur) <= endStr) {
+      const d = toLocalDateString(cur);
+      if (d >= startStr) {
+        // Base pts for the day
+        let dayPts = r.avgPtsUsed;
+        // Apply feedback adjustment proportionally if completed
+        if (r.status === 'completed' && r.feedbackAdjustment !== null && r.daysCount > 0) {
+          dayPts += r.feedbackAdjustment / r.daysCount;
+        }
+        result[d] = (result[d] ?? 0) + Math.round(dayPts);
+      }
+      cur.setDate(cur.getDate() + 1);
+      if (cur > end) break;
+    }
+  }
+  return result;
+}
 
 export function buildChartData(
   records: SessionRecord[],
@@ -131,6 +168,7 @@ export function buildChartData(
   range: TimeRange,
   today: Date,
   habitCompletions: HabitCompletion[] = [],
+  vacationRecords: VacationRecord[] = [],
 ): ChartData {
   const todayNorm = normDate(today);
   let startDate: Date;
@@ -148,7 +186,7 @@ export function buildChartData(
     startDate = addDays(todayNorm, -99);
   } else {
     if (records.length === 0 && habitCompletions.length === 0) {
-      return { buckets: [], activeProjects: [], activeCategories: [], isWeekly: false, filteredRecords: [] };
+      return { buckets: [], activeProjects: [], activeCategories: [], isWeekly: false, filteredRecords: [], vacationDaySet: new Set() };
     }
     const allDates = [
       ...records.map(r => r.startDate),
@@ -165,10 +203,24 @@ export function buildChartData(
   const rangeRecords = records.filter(r => r.startDate >= startStr && r.startDate <= endStr);
 
   const habitPtsPerDay = getHabitPointsPerDay(habitCompletions, startStr, endStr);
+  const vacationPtsPerDay = buildVacationPtsPerDay(vacationRecords, startStr, endStr);
+
+  // Build a set of vacation day strings for x-axis coloring
+  const vacationDaySet = new Set<string>();
+  for (const r of vacationRecords) {
+    if (r.status === 'cancelled') continue;
+    let cur = new Date(r.startDate + 'T00:00:00');
+    const rEnd = new Date(r.endDate + 'T00:00:00');
+    while (cur <= rEnd) {
+      const d = toLocalDateString(cur);
+      if (d >= startStr && d <= endStr) vacationDaySet.add(d);
+      cur.setDate(cur.getDate() + 1);
+    }
+  }
 
   const buckets = isWeekly
-    ? buildWeeklyBuckets(rangeRecords, startDate, todayNorm, habitPtsPerDay, projectToCategoryId)
-    : buildDailyBuckets(rangeRecords, startDate, todayNorm, range === '7d', habitPtsPerDay, projectToCategoryId);
+    ? buildWeeklyBuckets(rangeRecords, startDate, todayNorm, habitPtsPerDay, projectToCategoryId, vacationPtsPerDay)
+    : buildDailyBuckets(rangeRecords, startDate, todayNorm, range === '7d', habitPtsPerDay, projectToCategoryId, vacationPtsPerDay);
 
   // Only include projects that have at least 1 minute in this range
   const usedProjectIds = new Set<string>(
@@ -182,7 +234,7 @@ export function buildChartData(
   );
   const activeCategories = allCategories.filter(c => usedCategoryIds.has(c.id));
 
-  return { buckets, activeProjects, activeCategories, isWeekly, filteredRecords: rangeRecords };
+  return { buckets, activeProjects, activeCategories, isWeekly, filteredRecords: rangeRecords, vacationDaySet };
 }
 
 export interface KpiSummary {
@@ -193,6 +245,7 @@ export interface KpiSummary {
   flowPts: number;
   habitPts: number;
   taskPts: number;
+  vacationPts: number;
   avgPtsPerDay: string;
 }
 
@@ -234,8 +287,9 @@ export function buildKpiSummary(data: ChartData, taskPts: number): KpiSummary {
     : '—';
   const flowPts = buckets.reduce((sum, b) => sum + b.score, 0);
   const habitPts = buckets.reduce((sum, b) => sum + b.habitPts, 0);
-  const nonEmptyDays = buckets.filter(b => b.score + b.habitPts > 0).length;
-  const totalPts = flowPts + habitPts + taskPts;
+  const vacationPts = buckets.reduce((sum, b) => sum + b.vacationPts, 0);
+  const nonEmptyDays = buckets.filter(b => b.score + b.habitPts + b.vacationPts > 0).length;
+  const totalPts = flowPts + habitPts + taskPts + vacationPts;
   const avgPtsPerDay = nonEmptyDays > 0 ? (totalPts / nonEmptyDays).toFixed(1) : '—';
   return {
     totalSessions: filteredRecords.length,
@@ -245,6 +299,7 @@ export function buildKpiSummary(data: ChartData, taskPts: number): KpiSummary {
     flowPts,
     habitPts,
     taskPts,
+    vacationPts,
     avgPtsPerDay,
   };
 }
@@ -258,11 +313,20 @@ function movingAverage(values: number[], window: number): (number | null)[] {
 }
 
 export function toPtsOptions(data: ChartData): EChartsCoreOption {
-  const { buckets, isWeekly } = data;
-  const totals = buckets.map(b => b.score + b.habitPts);
+  const { buckets, isWeekly, vacationDaySet } = data;
+  const totals = buckets.map(b => b.score + b.habitPts + b.vacationPts);
   const maWindow = isWeekly ? 2 : 14;
   const maLabel = isWeekly ? '2-week MA' : '14-day MA';
   const maData = movingAverage(totals, maWindow);
+
+  // Build axis label data with rich text for vacation days (purple)
+  const xAxisData = buckets.map(b => ({
+    value: b.label,
+    textStyle: vacationDaySet.has(b.key)
+      ? { color: '#9575CD', fontWeight: 'bold' as const }
+      : {},
+  }));
+
   return {
     grid: { left: 56, right: 16, top: 16, bottom: 64 },
     tooltip: {
@@ -279,7 +343,7 @@ export function toPtsOptions(data: ChartData): EChartsCoreOption {
     },
     xAxis: {
       type: 'category',
-      data: buckets.map(b => b.label),
+      data: xAxisData,
       axisLabel: { rotate: 40, fontSize: 11 },
     },
     yAxis: { type: 'value', name: 'pts', nameTextStyle: { fontSize: 11 } },
@@ -300,6 +364,14 @@ export function toPtsOptions(data: ChartData): EChartsCoreOption {
         data: buckets.map(b => b.habitPts),
         barMinHeight: 1,
         itemStyle: { color: '#81C784' },
+      },
+      {
+        name: 'Vacation pts',
+        type: 'bar',
+        stack: 'pts',
+        data: buckets.map(b => b.vacationPts),
+        barMinHeight: 1,
+        itemStyle: { color: 'rgba(149, 117, 205, 0.7)' },
       },
       {
         name: maLabel,

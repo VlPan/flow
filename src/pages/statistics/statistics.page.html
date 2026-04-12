@@ -70,11 +70,12 @@
     <div class="flex flex-col gap-1 rounded-xl border border-gray-200 dark:border-gray-700 px-5 py-4">
       <span class="text-xs font-medium text-gray-500 uppercase tracking-wide">Total points</span>
       <div class="flex items-center justify-between gap-3">
-        <span class="text-3xl font-bold">{{ stats.kpiSummary().flowPts + stats.kpiSummary().habitPts + stats.kpiSummary().taskPts }}</span>
+        <span class="text-3xl font-bold">{{ stats.kpiSummary().flowPts + stats.kpiSummary().habitPts + stats.kpiSummary().taskPts + stats.kpiSummary().vacationPts }}</span>
         <div class="flex flex-col gap-0.5 text-xs text-gray-500 text-right">
           <span>Flow: <b class="text-gray-700 dark:text-gray-300">{{ stats.kpiSummary().flowPts }}</b></span>
           <span>Habits: <b class="text-gray-700 dark:text-gray-300">{{ stats.kpiSummary().habitPts }}</b></span>
           <span>Tasks: <b class="text-gray-700 dark:text-gray-300">{{ stats.kpiSummary().taskPts }}</b></span>
+          <span style="color: #9575CD">Vacations: <b>{{ stats.kpiSummary().vacationPts }}</b></span>
         </div>
       </div>
     </div>

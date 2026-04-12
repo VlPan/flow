@@ -19,6 +19,15 @@
               Move to today
             </button>
           }
+          <button
+            mat-menu-item
+            (click)="openDeclareVacationDialog()"
+            [disabled]="!canDeclareVacation()"
+            [matTooltip]="canDeclareVacation() ? '' : 'No vacation days available'"
+          >
+            <mat-icon style="color:#9575CD">beach_access</mat-icon>
+            Declare Vacation
+          </button>
         </mat-menu>
       }
     </div>
@@ -32,6 +41,7 @@
           [project]="projectFor(row)"
           [isActive]="isRowActive(row)"
           [isAnySessionActive]="sessionService.activeSession() !== null"
+          [isVacationDay]="isSelectedDayVacation()"
           [fillPercent]="isRowActive(row) ? sessionService.fillPercent() : 0"
           [isPaused]="sessionService.isPaused()"
           (startRequested)="onStart(row)"

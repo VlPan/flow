@@ -10,6 +10,7 @@ import { dailySpendingLogsSchema } from '../../models/daily-spending-log.model';
 import { redemptionsSchema } from '../../models/redemption.model';
 import { billsSchema } from '../../models/bill.model';
 import { habitGroupsSchema, habitsSchema, habitCompletionsSchema } from '../../models/habit.model';
+import { vacationRecordsSchema, vacationTransactionsSchema } from '../../models/vacation.model';
 
 // Register all localStorage keys and their schemas here.
 // To add a new key: add an entry to this object.
@@ -47,6 +48,15 @@ export const STORAGE_REGISTRY = {
   habitCompletions: habitCompletionsSchema,
   // Statistics
   statsGoal: z.object({ startDate: z.string(), endDate: z.string(), points: z.number() }).nullable(),
+  // Vacations
+  vacationBalance: z.number(),
+  vacationRecords: vacationRecordsSchema,
+  vacationTransactions: vacationTransactionsSchema,
+  vacationLastSundayRewardDate: z.string().nullable(),
+  // Vacation settings
+  vacationChanceDivisor: z.number(),
+  vacationMaxChancePct: z.number(),
+  vacationStreakEnabled: z.boolean(),
 } satisfies Record<string, ZodType>;
 
 export type StorageRegistry = typeof STORAGE_REGISTRY;

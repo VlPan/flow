@@ -9,6 +9,7 @@ import {
 } from '../../models/project.model';
 import { LocalStorageService } from '../local-storage/local-storage.service';
 import { BalanceService } from '../balance/balance.service';
+import { VacationService } from '../vacation/vacation.service';
 import { toLocalDateString } from '../../utils/date.utils';
 
 const MAX_IMPORTANT = 3;
@@ -17,6 +18,7 @@ const MAX_IMPORTANT = 3;
 export class ProjectsService {
   private readonly storage = inject(LocalStorageService);
   private readonly balanceService = inject(BalanceService);
+  private readonly vacationService = inject(VacationService);
 
   private readonly _projects = signal<Project[]>(this.storage.get('projects') ?? []);
   private readonly _claimRecords = signal<TaskClaimRecord[]>(this.storage.get('taskClaimRecords') ?? []);
@@ -127,6 +129,7 @@ export class ProjectsService {
     this.syncClaimRecords();
 
     this.balanceService.addSessionPoints(points);
+    this.vacationService.checkRandomChance(points);
   }
 
   completionPercent(project: Project): number {

@@ -155,3 +155,139 @@
   gap: 4px;
   flex-shrink: 0;
 }
+
+/* Vacations Panel */
+.vacations-panel {
+  border: 1.5px solid rgba(149, 117, 205, 0.4);
+  border-radius: 16px;
+  background: rgba(149, 117, 205, 0.04);
+  padding: 20px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.vacation-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.vacation-title-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+}
+
+.vacation-icon {
+  color: #9575CD;
+}
+
+.vacation-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: #9575CD;
+}
+
+.vacation-balance {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+}
+
+.vacation-count {
+  font-size: 28px;
+  font-weight: 700;
+  color: #9575CD;
+}
+
+.vacation-unit {
+  font-size: 14px;
+  color: #9575CD;
+  opacity: 0.8;
+}
+
+.vacation-actions {
+  display: flex;
+  gap: 4px;
+}
+
+.pending-vacations {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding-top: 4px;
+  border-top: 1px solid rgba(149, 117, 205, 0.2);
+}
+
+.pending-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+}
+
+.pending-date {
+  flex: 1;
+  color: var(--mat-sys-on-surface);
+}
+
+.pending-pts {
+  color: #9575CD;
+  font-weight: 500;
+}
+
+.undo-btn {
+  font-size: 12px;
+  color: #999;
+  min-width: auto;
+  padding: 0 8px;
+}
+
+/* Vacation History */
+.vacation-history-section {
+  margin-top: -8px;
+}
+
+.vacation-history-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.history-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  border-radius: 8px;
+  background: var(--mat-sys-surface-variant, rgba(0,0,0,0.03));
+}
+
+.history-info {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.history-label {
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.history-note {
+  font-size: 11px;
+  color: var(--mat-sys-on-surface-variant);
+}
+
+.history-date {
+  font-size: 11px;
+  color: var(--mat-sys-on-surface-variant);
+}
+
+.history-amount {
+  font-weight: 700;
+  font-size: 14px;
+}

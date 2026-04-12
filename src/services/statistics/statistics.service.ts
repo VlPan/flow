@@ -5,6 +5,7 @@ import { ProjectsService } from '../projects/projects.service';
 import { HabitsService } from '../habits/habits.service';
 import { CategoriesService } from '../categories/categories.service';
 import { LocalStorageService } from '../local-storage/local-storage.service';
+import { VacationService } from '../vacation/vacation.service';
 import {
   TimeRange,
   KpiSummary,
@@ -35,6 +36,7 @@ export class StatisticsService {
   private readonly habitsService = inject(HabitsService);
   private readonly categoriesService = inject(CategoriesService);
   private readonly storage = inject(LocalStorageService);
+  private readonly vacationService = inject(VacationService);
 
   readonly selectedRange = signal<TimeRange>('30d');
   readonly goal = signal<GoalConfig | null>(this.storage.get('statsGoal') ?? null);
@@ -54,6 +56,7 @@ export class StatisticsService {
       this.selectedRange(),
       this.today,
       this.habitsService.completions(),
+      this.vacationService.vacationRecords(),
     ),
   );
 

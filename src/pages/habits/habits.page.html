@@ -54,6 +54,8 @@
                   <mat-checkbox
                     class="shrink-0"
                     [checked]="habits.isCompleted(habit.id, today())"
+                    [disabled]="isVacationDay(today()) && !habits.isCompleted(habit.id, today())"
+                    [title]="isVacationDay(today()) ? 'Vacation day — tracking disabled' : ''"
                     (change)="toggleHabitCompletion(habit, today())"
                   ></mat-checkbox>
 
@@ -93,8 +95,10 @@
                         class="day-chip"
                         [class.day-chip-checked]="habits.isCompleted(habit.id, day)"
                         [class.day-chip-scored]="habit.withCompletionScore && !habits.isCompleted(habit.id, day)"
+                        [class.day-chip-vacation]="isVacationDay(day)"
+                        [disabled]="isVacationDay(day) && !habits.isCompleted(habit.id, day)"
                         (click)="toggleHabitCompletion(habit, day)"
-                        [title]="dayLabel(day)"
+                        [title]="isVacationDay(day) ? 'Vacation day' : dayLabel(day)"
                       >{{ dayInitial(day) }}</button>
                     }
                     <button mat-icon-button [matMenuTriggerFor]="habitMenu">
@@ -150,6 +154,8 @@
                   <mat-checkbox
                     class="shrink-0"
                     [checked]="habits.isCompleted(habit.id, yesterday())"
+                    [disabled]="isVacationDay(yesterday()) && !habits.isCompleted(habit.id, yesterday())"
+                    [title]="isVacationDay(yesterday()) ? 'Vacation day — tracking disabled' : ''"
                     (change)="toggleHabitCompletion(habit, yesterday())"
                   ></mat-checkbox>
 
