@@ -1020,6 +1020,7 @@ export function toGoalChartOptions(
   allClaimRecords: TaskClaimRecord[],
   goal: GoalConfig,
   today: Date,
+  allVacationRecords: VacationRecord[] = [],
 ): EChartsCoreOption {
   const { startDate, endDate, points: goalPoints } = goal;
   const todayStr = toLocalDateString(normDate(today));
@@ -1030,6 +1031,11 @@ export function toGoalChartOptions(
   const taskPtsPerDay: Record<string, number> = {};
   for (const r of allClaimRecords.filter(r => r.date >= startDate && r.date <= endDate)) {
     taskPtsPerDay[r.date] = (taskPtsPerDay[r.date] ?? 0) + r.points;
+  }
+
+  const vacationPtsPerDay: Record<string, number> = {};
+  for (const r of allVacationRecords.filter(r => r.startDate >= startDate && r.startDate <= endDate)) {
+    vacationPtsPerDay[r.startDate] = (vacationPtsPerDay[r.startDate] ?? 0) + r.ptsAwarded;
   }
 
   // Build daily buckets
@@ -1051,7 +1057,7 @@ export function toGoalChartOptions(
     if (key <= todayStr) {
       const dayRecs = byDate.get(key) ?? [];
       const dayScore = dayRecs.reduce((s, r) => s + calculateSessionScore(r.sessionMinutes, r.flowScore), 0);
-      running += Math.round(dayScore) + (habitPtsPerDay[key] ?? 0) + (taskPtsPerDay[key] ?? 0);
+      running += Math.round(dayScore) + (habitPtsPerDay[key] ?? 0) + (taskPtsPerDay[key] ?? 0) + Math.round(vacationPtsPerDay[key] ?? 0);
       cumulativeData.push(running);
     } else {
       cumulativeData.push(null);

@@ -75,6 +75,7 @@ export class StatisticsService {
       this.projectsService.claimRecords(),
       goal,
       this.today,
+      this.vacationService.vacationRecords(),
     );
   });
   readonly ptsChartOptions = computed<EChartsCoreOption>(() => toPtsOptions(this._data()));
