@@ -4,6 +4,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { LocalStorageService } from '../local-storage/local-storage.service';
 import { BalanceService } from '../balance/balance.service';
 import { VacationService } from '../vacation/vacation.service';
+import { SimpleTrackService } from '../simple-track/simple-track.service';
 import { Habit, HabitCompletion, HabitGroup } from '../../models/habit.model';
 import {
   calculateMasteryProgress,
@@ -27,6 +28,7 @@ export class HabitsService {
   private readonly storage = inject(LocalStorageService);
   private readonly balance = inject(BalanceService);
   readonly vacationService = inject(VacationService);
+  readonly simpleTrackService = inject(SimpleTrackService);
 
   private readonly _groups = signal<HabitGroup[]>(this.storage.get('habitGroups') ?? []);
   private readonly _habits = signal<Habit[]>(this.storage.get('habits') ?? []);
@@ -41,6 +43,13 @@ export class HabitsService {
   readonly activeHabits = computed(() => this._habits().filter(h => !h.isMastered && !h.isArchived));
   readonly masteredHabits = computed(() => this._habits().filter(h => h.isMastered && !h.isArchived));
   readonly archivedHabits = computed(() => this._habits().filter(h => h.isArchived));
+
+  private readonly trackingDisabledDays = computed(() => {
+    const disabled = new Set<string>();
+    this.vacationService.vacationDays().forEach(d => disabled.add(d));
+    this.simpleTrackService.simpleTrackDays().forEach(d => disabled.add(d));
+    return disabled;
+  });
 
   readonly habitsByGroup = computed(() => {
     const map: Record<string, Habit[]> = {};
@@ -182,7 +191,7 @@ export class HabitsService {
       const habit = this._habits().find(h => h.id === habitId);
       if (!habit || habit.isMastered) return;
 
-      const sticks = calculateSticks(habitId, this._completions(), habit, new Date(date + 'T00:00:00'), this.vacationService.vacationDays());
+      const sticks = calculateSticks(habitId, this._completions(), habit, new Date(date + 'T00:00:00'), this.trackingDisabledDays());
       const pointsEarned = Math.round(habit.basePoints * (1 + sticks * 0.1));
 
       const completion: HabitCompletion = { id: uuidv4(), habitId, date, pointsEarned };
@@ -198,11 +207,11 @@ export class HabitsService {
   getSticks(habitId: string, referenceDate?: Date): number {
     const habit = this._habits().find(h => h.id === habitId);
     if (!habit) return 0;
-    return calculateSticks(habitId, this._completions(), habit, referenceDate ?? new Date(), this.vacationService.vacationDays());
+    return calculateSticks(habitId, this._completions(), habit, referenceDate ?? new Date(), this.trackingDisabledDays());
   }
 
   getMasteryProgress(habit: Habit): { percent: number; isMastered: boolean } {
-    return calculateMasteryProgress(habit, this._completions(), new Date(), this.vacationService.vacationDays());
+    return calculateMasteryProgress(habit, this._completions(), new Date(), this.trackingDisabledDays());
   }
 
   isCompleted(habitId: string, date: string): boolean {
@@ -218,7 +227,7 @@ export class HabitsService {
     if (!habit || habit.isMastered) return;
     if (this._completions().some(c => c.habitId === habitId && c.date === date)) return;
 
-    const sticks = calculateSticks(habitId, this._completions(), habit, new Date(date + 'T00:00:00'), this.vacationService.vacationDays());
+    const sticks = calculateSticks(habitId, this._completions(), habit, new Date(date + 'T00:00:00'), this.trackingDisabledDays());
     const scoreMultiplier = getCompletionScoreMultiplier(completionScore);
     const pointsEarned = Math.round(habit.basePoints * scoreMultiplier * (1 + sticks * 0.1));
 
@@ -292,7 +301,7 @@ export class HabitsService {
     const habit = this._habits().find(h => h.id === habitId);
     if (!habit || habit.isMastered) return;
 
-    const { isMastered } = calculateMasteryProgress(habit, this._completions(), new Date(), this.vacationService.vacationDays());
+    const { isMastered } = calculateMasteryProgress(habit, this._completions(), new Date(), this.trackingDisabledDays());
     if (isMastered) {
       this.updateHabit(habitId, { isMastered: true });
     }

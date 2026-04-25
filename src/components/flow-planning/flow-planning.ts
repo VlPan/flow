@@ -26,10 +26,13 @@ import {
   DeclareVacationDialog,
   DeclareVacationDialogResult,
 } from '../declare-vacation-dialog/declare-vacation-dialog';
+import { SimpleTrackService } from '../../services/simple-track/simple-track.service';
+import { SimpleTrackScoreDialog } from '../simple-track-score-dialog/simple-track-score-dialog';
 import { PlanningRow } from '../../models/planning-row.model';
-import { Project } from '../../models/project.model';
+import { Project, TaskClaimRecord } from '../../models/project.model';
 import { BREAK_VECTOR } from '../../models/flow-vector.model';
 import { SessionRecord } from '../../models/session.model';
+import { HabitCompletion } from '../../models/habit.model';
 import { toLocalDateString } from '../../utils/date.utils';
 import { calculateSessionScore } from '../../utils/scoring.utils';
 
@@ -48,6 +51,7 @@ export class FlowPlanning {
   private readonly projectsService = inject(ProjectsService);
   private readonly balanceService = inject(BalanceService);
   readonly vacationService = inject(VacationService);
+  readonly simpleTrackService = inject(SimpleTrackService);
   private readonly dialog = inject(MatDialog);
 
   private readonly projectsMap = computed(() => {
@@ -80,6 +84,28 @@ export class FlowPlanning {
     this.vacationService.isVacationDay(toLocalDateString(this.dateService.selectedDay()))
   );
 
+  protected readonly isSelectedDaySimpleTrack = computed(() =>
+    this.simpleTrackService.isSimpleTrackDay(toLocalDateString(this.dateService.selectedDay()))
+  );
+
+  protected readonly todayPoints = computed(() => {
+    const todayStr = toLocalDateString(this.dateService.today);
+    
+    // Sessions
+    const sessions = this.sessionService.records().filter((r: SessionRecord) => r.startDate === todayStr);
+    const sessionPts = sessions.reduce((sum, s) => sum + calculateSessionScore(s.sessionMinutes, s.flowScore), 0);
+    
+    // Habits
+    const habitsStorage = (this.vacationService as any)['storage'].get('habitCompletions') ?? [];
+    const habitPts = habitsStorage.filter((c: HabitCompletion) => c.date === todayStr).reduce((sum: number, c: HabitCompletion) => sum + c.pointsEarned, 0);
+
+    // Tasks
+    const claimsStorage = (this.vacationService as any)['storage'].get('taskClaimRecords') ?? [];
+    const taskPts = claimsStorage.filter((c: TaskClaimRecord) => c.date === todayStr).reduce((sum: number, c: TaskClaimRecord) => sum + c.points, 0);
+
+    return Math.round(sessionPts) + habitPts + taskPts;
+  });
+
   protected readonly quickPickProjects = computed(() => {
     if (this.sessionService.activeSession()) return [];
     return this.projectsService.projects();
@@ -99,6 +125,42 @@ export class FlowPlanning {
       .subscribe((result?: DeclareVacationDialogResult) => {
         if (!result) return;
         this.vacationService.declareVacation(result.startDate, result.endDate);
+      });
+  }
+
+  protected startSimpleTrackDay(): void {
+    const pts = this.todayPoints();
+    this.dialog
+      .open(ConfirmDialog, {
+        width: '400px',
+        data: {
+          message: `Are you sure you want to switch to Simple Track mode for today? This will reset your ${pts} points earned today and disable detailed tracking.`,
+          confirmLabel: 'Start Simple Track',
+          cancelLabel: 'Cancel',
+        },
+      })
+      .afterClosed()
+      .subscribe((confirmed: boolean) => {
+        if (!confirmed) return;
+        this.simpleTrackService.startSimpleTrackDay(toLocalDateString(this.dateService.today), pts);
+      });
+  }
+
+  protected scoreSimpleTrackDay(): void {
+    const todayStr = toLocalDateString(this.dateService.today);
+    const record = this.simpleTrackService.simpleTrackRecords().find(r => r.date === todayStr);
+    if (!record) return;
+
+    this.dialog
+      .open(SimpleTrackScoreDialog, {
+        width: '420px',
+        data: { record },
+      })
+      .afterClosed()
+      .subscribe((result?: number) => {
+        if (result !== undefined) {
+          this.simpleTrackService.scoreDay(record.id, result);
+        }
       });
   }
 

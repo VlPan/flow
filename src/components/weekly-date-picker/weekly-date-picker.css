@@ -114,3 +114,16 @@
   justify-content: center;
   margin-top: 10px;
 }
+
+.day-btn.is-simple-track:not(.is-selected) {
+  background-color: #e0f2f1;
+  color: #4DB6AC;
+  border-color: #b2dfdb;
+}
+
+.day-btn.is-simple-track.is-selected {
+  background-color: #4DB6AC;
+  color: white;
+  border-color: #4DB6AC;
+}
+

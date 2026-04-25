@@ -4,11 +4,11 @@
   <div class="planning-content">
     <div class="day-label-row">
       <h3 class="day-label">{{ dateService.selectedDay() | date: 'EEEE, MMMM d' }}</h3>
-      @if (todayRows().length > 0) {
-        <button mat-icon-button [matMenuTriggerFor]="dayMenu" [disabled]="sessionService.activeSession() !== null" class="day-menu-btn">
-          <mat-icon>more_vert</mat-icon>
-        </button>
-        <mat-menu #dayMenu="matMenu">
+      <button mat-icon-button [matMenuTriggerFor]="dayMenu" [disabled]="sessionService.activeSession() !== null" class="day-menu-btn">
+        <mat-icon>more_vert</mat-icon>
+      </button>
+      <mat-menu #dayMenu="matMenu">
+        @if (todayRows().length > 0) {
           <button mat-menu-item (click)="moveToNextDay()">
             <mat-icon>arrow_forward</mat-icon>
             Move to next day
@@ -19,17 +19,39 @@
               Move to today
             </button>
           }
-          <button
-            mat-menu-item
-            (click)="openDeclareVacationDialog()"
-            [disabled]="!canDeclareVacation()"
-            [matTooltip]="canDeclareVacation() ? '' : 'No vacation days available'"
-          >
-            <mat-icon style="color:#9575CD">beach_access</mat-icon>
-            Declare Vacation
-          </button>
-        </mat-menu>
-      }
+        }
+        <button
+          mat-menu-item
+          (click)="openDeclareVacationDialog()"
+          [disabled]="!canDeclareVacation()"
+          [matTooltip]="canDeclareVacation() ? '' : 'No vacation days available'"
+        >
+          <mat-icon style="color:#9575CD">beach_access</mat-icon>
+          Declare Vacation
+        </button>
+
+        @if (isSelectedDayToday()) {
+          @if (!isSelectedDaySimpleTrack()) {
+            <button
+              mat-menu-item
+              (click)="startSimpleTrackDay()"
+              [disabled]="todayPoints() === 0"
+              [matTooltip]="todayPoints() === 0 ? 'You need to earn some points today before starting a Simple Track day.' : ''"
+            >
+              <mat-icon style="color:#4DB6AC">track_changes</mat-icon>
+              Start Simple Track Day
+            </button>
+          } @else {
+            <button
+              mat-menu-item
+              (click)="scoreSimpleTrackDay()"
+            >
+              <mat-icon style="color:#4DB6AC">fact_check</mat-icon>
+              Score Simple Track Day
+            </button>
+          }
+        }
+      </mat-menu>
     </div>
 
     <div class="rows-list" cdkDropList (cdkDropListDropped)="onDrop($event)">
@@ -42,6 +64,7 @@
           [isActive]="isRowActive(row)"
           [isAnySessionActive]="sessionService.activeSession() !== null"
           [isVacationDay]="isSelectedDayVacation()"
+          [isSimpleTrackDay]="isSelectedDaySimpleTrack()"
           [fillPercent]="isRowActive(row) ? sessionService.fillPercent() : 0"
           [isPaused]="sessionService.isPaused()"
           (startRequested)="onStart(row)"

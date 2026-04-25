@@ -6,6 +6,7 @@ import { HabitsService } from '../habits/habits.service';
 import { CategoriesService } from '../categories/categories.service';
 import { LocalStorageService } from '../local-storage/local-storage.service';
 import { VacationService } from '../vacation/vacation.service';
+import { SimpleTrackService } from '../simple-track/simple-track.service';
 import {
   TimeRange,
   KpiSummary,
@@ -37,6 +38,7 @@ export class StatisticsService {
   private readonly categoriesService = inject(CategoriesService);
   private readonly storage = inject(LocalStorageService);
   private readonly vacationService = inject(VacationService);
+  private readonly simpleTrackService = inject(SimpleTrackService);
 
   readonly selectedRange = signal<TimeRange>('30d');
   readonly goal = signal<GoalConfig | null>(this.storage.get('statsGoal') ?? null);
@@ -57,6 +59,7 @@ export class StatisticsService {
       this.today,
       this.habitsService.completions(),
       this.vacationService.vacationRecords(),
+      this.simpleTrackService.simpleTrackRecords(),
     ),
   );
 
@@ -76,6 +79,7 @@ export class StatisticsService {
       goal,
       this.today,
       this.vacationService.vacationRecords(),
+      this.simpleTrackService.simpleTrackRecords(),
     );
   });
   readonly ptsChartOptions = computed<EChartsCoreOption>(() => toPtsOptions(this._data()));

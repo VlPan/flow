@@ -23,6 +23,7 @@ import { CompletionScoreDialog } from '../../components/completion-score-dialog/
 import { Habit, HabitGroup } from '../../models/habit.model';
 import { getCompletionScoreEmoji, getLastNDays } from '../../utils/habit.utils';
 import { toLocalDateString } from '../../utils/date.utils';
+import { SimpleTrackService } from '../../services/simple-track/simple-track.service';
 
 @Component({
   selector: 'app-habits-page',
@@ -46,6 +47,7 @@ import { toLocalDateString } from '../../utils/date.utils';
 export class HabitsPage {
   protected readonly habits = inject(HabitsService);
   protected readonly vacationService = inject(VacationService);
+  protected readonly simpleTrackService = inject(SimpleTrackService);
   private readonly dialog = inject(MatDialog);
 
   protected readonly othersGroupId = OTHERS_GROUP_ID;
@@ -67,6 +69,10 @@ export class HabitsPage {
 
   protected isVacationDay(dateStr: string): boolean {
     return this.vacationService.isVacationDay(dateStr);
+  }
+
+  protected isSimpleTrackDay(dateStr: string): boolean {
+    return this.simpleTrackService.isSimpleTrackDay(dateStr);
   }
 
   protected dayLabel(dateStr: string): string {
@@ -98,8 +104,11 @@ export class HabitsPage {
   }
 
   protected toggleHabitCompletion(habit: Habit, date: string): void {
-    // Block new completions on vacation days (allow unchecking existing ones)
-    if (this.vacationService.isVacationDay(date) && !this.habits.isCompleted(habit.id, date)) {
+    // Block new completions on vacation/simple track days (allow unchecking existing ones)
+    if (
+      (this.vacationService.isVacationDay(date) || this.simpleTrackService.isSimpleTrackDay(date)) &&
+      !this.habits.isCompleted(habit.id, date)
+    ) {
       return;
     }
     if (this.habits.isCompleted(habit.id, date)) {

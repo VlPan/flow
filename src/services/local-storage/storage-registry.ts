@@ -11,6 +11,7 @@ import { redemptionsSchema } from '../../models/redemption.model';
 import { billsSchema } from '../../models/bill.model';
 import { habitGroupsSchema, habitsSchema, habitCompletionsSchema } from '../../models/habit.model';
 import { vacationRecordsSchema, vacationTransactionsSchema } from '../../models/vacation.model';
+import { simpleTrackRecordsSchema } from '../../models/simple-track.model';
 
 // Register all localStorage keys and their schemas here.
 // To add a new key: add an entry to this object.
@@ -48,6 +49,8 @@ export const STORAGE_REGISTRY = {
   habitCompletions: habitCompletionsSchema,
   // Statistics
   statsGoal: z.object({ startDate: z.string(), endDate: z.string(), points: z.number() }).nullable(),
+  // Simple Track
+  simpleTrackRecords: simpleTrackRecordsSchema,
   // Vacations
   vacationBalance: z.number(),
   vacationRecords: vacationRecordsSchema,

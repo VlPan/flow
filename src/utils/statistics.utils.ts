@@ -9,6 +9,8 @@ import { calculateSessionScore } from './scoring.utils';
 import { getWeekStart, toLocalDateString } from './date.utils';
 import { getHabitPointsPerDay } from './habit.utils';
 
+import { SimpleTrackRecord } from '../models/simple-track.model';
+
 export type TimeRange = '7d' | '30d' | '100d' | 'all';
 
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
@@ -19,7 +21,9 @@ interface Bucket {
   label: string;
   score: number;
   habitPts: number;
+  taskPts: number;
   vacationPts: number;
+  simplePts: number;
   minutesByVector: Record<string, number>;
   minutesByCategory: Record<string, number>;
 }
@@ -77,6 +81,7 @@ function buildDailyBuckets(
   habitPtsPerDay: Record<string, number>,
   vectorToCategoryId: Record<string, string>,
   vacationPtsPerDay: Record<string, number> = {},
+  simplePtsPerDay: Record<string, number> = {},
 ): Bucket[] {
   const byDate = new Map<string, SessionRecord[]>();
   for (const r of records) {
@@ -94,7 +99,8 @@ function buildDailyBuckets(
     const { score, minutesByVector, minutesByCategory } = calcBucket(byDate.get(key) ?? [], vectorToCategoryId);
     const habitPts = habitPtsPerDay[key] ?? 0;
     const vacationPts = vacationPtsPerDay[key] ?? 0;
-    buckets.push({ key, label: formatDayLabel(cur, showWeekday), score, habitPts, vacationPts, minutesByVector, minutesByCategory });
+    const simplePts = simplePtsPerDay[key] ?? 0;
+    buckets.push({ key, label: formatDayLabel(cur, showWeekday), score, habitPts, vacationPts, simplePts, minutesByVector, minutesByCategory } as unknown as Bucket);
     cur = addDays(cur, 1);
   }
   return buckets;
@@ -107,6 +113,7 @@ function buildWeeklyBuckets(
   habitPtsPerDay: Record<string, number>,
   vectorToCategoryId: Record<string, string>,
   vacationPtsPerDay: Record<string, number> = {},
+  simplePtsPerDay: Record<string, number> = {},
 ): Bucket[] {
   const buckets: Bucket[] = [];
   let weekStart = normDate(getWeekStart(start));
@@ -125,7 +132,10 @@ function buildWeeklyBuckets(
     const vacationPts = Object.entries(vacationPtsPerDay)
       .filter(([d]) => d >= wsStr && d <= weStr)
       .reduce((sum, [, pts]) => sum + pts, 0);
-    buckets.push({ key: wsStr, label, score, habitPts, vacationPts, minutesByVector, minutesByCategory });
+    const simplePts = Object.entries(simplePtsPerDay)
+      .filter(([d]) => d >= wsStr && d <= weStr)
+      .reduce((sum, [, pts]) => sum + pts, 0);
+    buckets.push({ key: wsStr, label, score, habitPts, vacationPts, simplePts, minutesByVector, minutesByCategory } as unknown as Bucket);
     weekStart = addDays(weekStart, 7);
   }
   return buckets;
@@ -161,6 +171,20 @@ export function buildVacationPtsPerDay(
   return result;
 }
 
+export function buildSimpleTrackPtsPerDay(
+  records: SimpleTrackRecord[],
+  startStr: string,
+  endStr: string,
+): Record<string, number> {
+  const result: Record<string, number> = {};
+  for (const r of records) {
+    if (r.date >= startStr && r.date <= endStr && r.awardedPts !== null) {
+      result[r.date] = r.awardedPts;
+    }
+  }
+  return result;
+}
+
 export function buildChartData(
   records: SessionRecord[],
   allProjects: Project[],
@@ -169,6 +193,7 @@ export function buildChartData(
   today: Date,
   habitCompletions: HabitCompletion[] = [],
   vacationRecords: VacationRecord[] = [],
+  simpleTrackRecords: SimpleTrackRecord[] = [],
 ): ChartData {
   const todayNorm = normDate(today);
   let startDate: Date;
@@ -204,6 +229,7 @@ export function buildChartData(
 
   const habitPtsPerDay = getHabitPointsPerDay(habitCompletions, startStr, endStr);
   const vacationPtsPerDay = buildVacationPtsPerDay(vacationRecords, startStr, endStr);
+  const simplePtsPerDay = buildSimpleTrackPtsPerDay(simpleTrackRecords, startStr, endStr);
 
   // Build a set of vacation day strings for x-axis coloring
   const vacationDaySet = new Set<string>();
@@ -219,8 +245,8 @@ export function buildChartData(
   }
 
   const buckets = isWeekly
-    ? buildWeeklyBuckets(rangeRecords, startDate, todayNorm, habitPtsPerDay, projectToCategoryId, vacationPtsPerDay)
-    : buildDailyBuckets(rangeRecords, startDate, todayNorm, range === '7d', habitPtsPerDay, projectToCategoryId, vacationPtsPerDay);
+    ? buildWeeklyBuckets(rangeRecords, startDate, todayNorm, habitPtsPerDay, projectToCategoryId, vacationPtsPerDay, simplePtsPerDay)
+    : buildDailyBuckets(rangeRecords, startDate, todayNorm, range === '7d', habitPtsPerDay, projectToCategoryId, vacationPtsPerDay, simplePtsPerDay);
 
   // Only include projects that have at least 1 minute in this range
   const usedProjectIds = new Set<string>(
@@ -288,8 +314,9 @@ export function buildKpiSummary(data: ChartData, taskPts: number): KpiSummary {
   const flowPts = buckets.reduce((sum, b) => sum + b.score, 0);
   const habitPts = buckets.reduce((sum, b) => sum + b.habitPts, 0);
   const vacationPts = buckets.reduce((sum, b) => sum + b.vacationPts, 0);
-  const nonEmptyDays = buckets.filter(b => b.score + b.habitPts + b.vacationPts > 0).length;
-  const totalPts = flowPts + habitPts + taskPts + vacationPts;
+  const simplePts = buckets.reduce((sum, b) => sum + (b.simplePts ?? 0), 0);
+  const nonEmptyDays = buckets.filter(b => b.score + b.habitPts + b.vacationPts + (b.simplePts ?? 0) > 0).length;
+  const totalPts = flowPts + habitPts + taskPts + vacationPts + simplePts;
   const avgPtsPerDay = nonEmptyDays > 0 ? (totalPts / nonEmptyDays).toFixed(1) : '—';
   return {
     totalSessions: filteredRecords.length,
@@ -314,7 +341,7 @@ function movingAverage(values: number[], window: number): (number | null)[] {
 
 export function toPtsOptions(data: ChartData): EChartsCoreOption {
   const { buckets, isWeekly, vacationDaySet } = data;
-  const totals = buckets.map(b => b.score + b.habitPts + b.vacationPts);
+  const totals = buckets.map(b => b.score + b.habitPts + b.vacationPts + (b.simplePts ?? 0));
   const maWindow = isWeekly ? 2 : 14;
   const maLabel = isWeekly ? '2-week MA' : '14-day MA';
   const maData = movingAverage(totals, maWindow);
@@ -372,6 +399,14 @@ export function toPtsOptions(data: ChartData): EChartsCoreOption {
         data: buckets.map(b => b.vacationPts),
         barMinHeight: 1,
         itemStyle: { color: 'rgba(149, 117, 205, 0.7)' },
+      },
+      {
+        name: 'Simple pts',
+        type: 'bar',
+        stack: 'pts',
+        data: buckets.map(b => b.simplePts ?? 0),
+        barMinHeight: 1,
+        itemStyle: { color: '#4DB6AC' },
       },
       {
         name: maLabel,
@@ -1021,6 +1056,7 @@ export function toGoalChartOptions(
   goal: GoalConfig,
   today: Date,
   allVacationRecords: VacationRecord[] = [],
+  simpleTrackRecords: SimpleTrackRecord[] = [],
 ): EChartsCoreOption {
   const { startDate, endDate, points: goalPoints } = goal;
   const todayStr = toLocalDateString(normDate(today));
@@ -1036,6 +1072,13 @@ export function toGoalChartOptions(
   const vacationPtsPerDay: Record<string, number> = {};
   for (const r of allVacationRecords.filter(r => r.startDate >= startDate && r.startDate <= endDate)) {
     vacationPtsPerDay[r.startDate] = (vacationPtsPerDay[r.startDate] ?? 0) + r.ptsAwarded;
+  }
+
+  const simplePtsPerDay: Record<string, number> = {};
+  for (const r of simpleTrackRecords.filter(r => r.date >= startDate && r.date <= endDate)) {
+    if (r.awardedPts !== null) {
+      simplePtsPerDay[r.date] = (simplePtsPerDay[r.date] ?? 0) + r.awardedPts;
+    }
   }
 
   // Build daily buckets
@@ -1057,7 +1100,7 @@ export function toGoalChartOptions(
     if (key <= todayStr) {
       const dayRecs = byDate.get(key) ?? [];
       const dayScore = dayRecs.reduce((s, r) => s + calculateSessionScore(r.sessionMinutes, r.flowScore), 0);
-      running += Math.round(dayScore) + (habitPtsPerDay[key] ?? 0) + (taskPtsPerDay[key] ?? 0) + Math.round(vacationPtsPerDay[key] ?? 0);
+      running += Math.round(dayScore) + (habitPtsPerDay[key] ?? 0) + (taskPtsPerDay[key] ?? 0) + Math.round(vacationPtsPerDay[key] ?? 0) + (simplePtsPerDay[key] ?? 0);
       cumulativeData.push(running);
     } else {
       cumulativeData.push(null);

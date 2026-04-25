@@ -20,6 +20,7 @@ export class FlowPlanningRow {
   readonly isActive = input<boolean>(false);
   readonly isAnySessionActive = input<boolean>(false);
   readonly isVacationDay = input<boolean>(false);
+  readonly isSimpleTrackDay = input<boolean>(false);
   readonly fillPercent = input<number>(0);
   readonly isPaused = input<boolean>(false);
 

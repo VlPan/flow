@@ -8,6 +8,9 @@ import { VacationFeedbackDialog } from '../components/vacation-feedback-dialog/v
 import { VacationRewardDialog } from '../components/vacation-reward-dialog/vacation-reward-dialog';
 import { VacationRecord } from '../models/vacation.model';
 import { runMigrations } from '../utils/migration.utils';
+import { SimpleTrackService } from '../services/simple-track/simple-track.service';
+import { SimpleTrackScoreDialog } from '../components/simple-track-score-dialog/simple-track-score-dialog';
+import { SimpleTrackRecord } from '../models/simple-track.model';
 
 @Component({
   selector: 'app-root',
@@ -19,6 +22,7 @@ export class App implements OnInit {
   private readonly dialog = inject(MatDialog);
   private readonly balanceService = inject(BalanceService);
   private readonly vacationService = inject(VacationService);
+  private readonly simpleTrackService = inject(SimpleTrackService);
 
   protected readonly title = signal('flow');
 
@@ -42,7 +46,37 @@ export class App implements OnInit {
     // Move any vacation records whose end date has passed to 'feedback_pending'
     this.vacationService.processPendingStatuses();
 
-    // Show vacation feedback dialogs (oldest first), then Sunday reward, then spending log
+    // Show simple track dialogs first, then vacation feedbacks
+    const simpleTrackFeedbacks = this.simpleTrackService.pendingFeedbacks();
+    if (simpleTrackFeedbacks.length > 0) {
+      this.showSimpleTrackFeedbacksSequentially([...simpleTrackFeedbacks], () => this.checkVacationFeedbacks());
+    } else {
+      this.checkVacationFeedbacks();
+    }
+  }
+
+  private showSimpleTrackFeedbacksSequentially(records: SimpleTrackRecord[], onDone: () => void): void {
+    if (records.length === 0) {
+      onDone();
+      return;
+    }
+    const [first, ...rest] = records;
+    this.dialog
+      .open(SimpleTrackScoreDialog, {
+        width: '420px',
+        data: { record: first },
+        disableClose: true,
+      })
+      .afterClosed()
+      .subscribe((result?: number) => {
+        if (result !== undefined) {
+          this.simpleTrackService.scoreDay(first.id, result);
+        }
+        this.showSimpleTrackFeedbacksSequentially(rest, onDone);
+      });
+  }
+
+  private checkVacationFeedbacks(): void {
     const pendingFeedbacks = this.vacationService.pendingFeedbacks();
     if (pendingFeedbacks.length > 0) {
       this.showFeedbackDialogsSequentially([...pendingFeedbacks], () => this.checkSundayAndSpending());

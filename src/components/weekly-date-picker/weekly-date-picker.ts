@@ -3,6 +3,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { DateService } from '../../services/date/date.service';
 import { VacationService } from '../../services/vacation/vacation.service';
+import { SimpleTrackService } from '../../services/simple-track/simple-track.service';
 import { isSameDay, isPastDay, toLocalDateString } from '../../utils/date.utils';
 
 @Component({
@@ -17,6 +18,7 @@ export class WeeklyDatePicker {
 
   protected readonly dateService = inject(DateService);
   protected readonly vacationService = inject(VacationService);
+  protected readonly simpleTrackService = inject(SimpleTrackService);
   protected readonly today = this.dateService.today;
 
   protected isSameDay = isSameDay;
@@ -28,5 +30,9 @@ export class WeeklyDatePicker {
 
   protected isVacationDay(date: Date): boolean {
     return this.vacationService.isVacationDay(toLocalDateString(date));
+  }
+
+  protected isSimpleTrackDay(date: Date): boolean {
+    return this.simpleTrackService.isSimpleTrackDay(toLocalDateString(date));
   }
 }

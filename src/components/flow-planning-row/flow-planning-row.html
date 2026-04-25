@@ -43,8 +43,8 @@
     } @else {
       <button
         mat-menu-item
-        [disabled]="isAnySessionActive() || isVacationDay()"
-        [matTooltip]="isVacationDay() ? 'Vacation day — tracking disabled' : ''"
+        [disabled]="isAnySessionActive() || isVacationDay() || isSimpleTrackDay()"
+        [matTooltip]="isVacationDay() ? 'Vacation day — tracking disabled' : (isSimpleTrackDay() ? 'Simple track day — tracking disabled' : '')"
         (click)="startRequested.emit()"
       >
         <mat-icon>play_arrow</mat-icon>
