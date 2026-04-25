@@ -35,8 +35,8 @@
             <button
               mat-menu-item
               (click)="startSimpleTrackDay()"
-              [disabled]="todayPoints() === 0"
-              [matTooltip]="todayPoints() === 0 ? 'You need to earn some points today before starting a Simple Track day.' : ''"
+              [disabled]="isSelectedDayVacation()"
+              [matTooltip]="isSelectedDayVacation() ? 'Cannot start Simple Track on a Vacation day.' : ''"
             >
               <mat-icon style="color:#4DB6AC">track_changes</mat-icon>
               Start Simple Track Day

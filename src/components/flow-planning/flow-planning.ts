@@ -130,11 +130,15 @@ export class FlowPlanning {
 
   protected startSimpleTrackDay(): void {
     const pts = this.todayPoints();
+    const message = pts > 0
+      ? `Are you sure you want to switch to Simple Track mode for today? This will reset your ${pts} points earned today and disable detailed tracking.`
+      : 'Are you sure you want to switch to Simple Track mode for today? Detailed tracking will be disabled.';
+
     this.dialog
       .open(ConfirmDialog, {
         width: '400px',
         data: {
-          message: `Are you sure you want to switch to Simple Track mode for today? This will reset your ${pts} points earned today and disable detailed tracking.`,
+          message,
           confirmLabel: 'Start Simple Track',
           cancelLabel: 'Cancel',
         },
