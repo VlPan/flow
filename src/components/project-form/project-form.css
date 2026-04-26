@@ -98,7 +98,7 @@
 
 .task-row {
   display: flex;
-  align-items: center;
+  align-items: flex-end;
   gap: 8px;
   border-radius: 6px;
   padding: 4px 8px;
@@ -108,7 +108,7 @@
   cursor: grab;
   color: rgba(0,0,0,0.4);
   flex-shrink: 0;
-  margin-bottom: 15px;
+  margin-bottom: 18px;
 }
 
 .drag-handle:active {

@@ -162,6 +162,26 @@ export class ProjectsPage {
       });
   }
 
+  protected onDeleteTask(project: Project, task: ProjectTask): void {
+    if (task.claimed) {
+      const tasks = project.tasks.filter(t => t.id !== task.id);
+      this.projectsService.update(project.id, { tasks });
+    } else {
+      this.dialog
+        .open(ConfirmDialog, {
+          width: '360px',
+          data: { message: `Delete task "${task.name}"? This cannot be undone.`, confirmLabel: 'Delete' },
+        })
+        .afterClosed()
+        .subscribe((confirmed: boolean) => {
+          if (confirmed) {
+            const tasks = project.tasks.filter(t => t.id !== task.id);
+            this.projectsService.update(project.id, { tasks });
+          }
+        });
+    }
+  }
+
   protected sortedTasks(project: Project): ProjectTask[] {
     return [...project.tasks].sort((a, b) => a.order - b.order);
   }

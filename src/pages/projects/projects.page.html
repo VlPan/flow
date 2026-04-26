@@ -94,6 +94,10 @@
                       {{ task.minPoints }}–{{ task.maxPoints }} pts
                     }
                   </span>
+                  <button class="task-delete-btn" mat-icon-button color="warn"
+                    (click)="onDeleteTask(project, task)" title="Delete task">
+                    <mat-icon>delete</mat-icon>
+                  </button>
                 </div>
               }
               @if (project.tasks.length === 0) {
