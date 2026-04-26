@@ -7,7 +7,8 @@ import {
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
-import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
+import { MAT_DIALOG_DATA, MatDialog, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
+import { ConfirmDialog } from '../confirm-dialog/confirm-dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
@@ -47,6 +48,7 @@ import { toLocalDateString } from '../../utils/date.utils';
 export class ProjectForm {
   private readonly fb = inject(FormBuilder);
   private readonly dialogRef = inject(MatDialogRef<ProjectForm>);
+  private readonly dialog = inject(MatDialog);
   private readonly categoriesService = inject(CategoriesService);
   protected readonly data = inject<Project | null>(MAT_DIALOG_DATA);
 
@@ -103,7 +105,18 @@ export class ProjectForm {
   }
 
   protected removeTask(i: number): void {
-    this.tasks.removeAt(i);
+    const taskGroup = this.asFormGroup(this.tasks.at(i));
+    const isClaimed = taskGroup.get('claimed')!.value as boolean;
+
+    if (isClaimed) {
+      this.tasks.removeAt(i);
+    } else {
+      this.dialog.open(ConfirmDialog, {
+        data: { message: 'Delete this task? This action cannot be undone.', confirmLabel: 'Delete' },
+      }).afterClosed().subscribe((confirmed: boolean) => {
+        if (confirmed) this.tasks.removeAt(i);
+      });
+    }
   }
 
   protected onDrop(event: CdkDragDrop<AbstractControl[]>): void {

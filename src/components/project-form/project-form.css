@@ -136,3 +136,13 @@
 .pts-field {
   width: 80px;
 }
+
+.task-row--completed {
+  background: rgba(0, 0, 0, 0.04);
+  opacity: 0.75;
+}
+
+.task-row--completed .task-name-field input {
+  text-decoration: line-through;
+  color: rgba(0, 0, 0, 0.45);
+}
