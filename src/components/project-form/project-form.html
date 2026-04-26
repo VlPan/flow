@@ -70,7 +70,9 @@
       <div cdkDropList (cdkDropListDropped)="onDrop($event)" class="tasks-list">
         @for (taskCtrl of tasks.controls; track $index; let i = $index) {
           <div class="task-row" [class.task-row--completed]="asFormGroup(taskCtrl).get('claimed')!.value" cdkDrag [formGroup]="asFormGroup(taskCtrl)">
-            <mat-icon cdkDragHandle class="drag-handle">drag_indicator</mat-icon>
+            <div class="task-icon-col">
+              <mat-icon cdkDragHandle class="drag-handle">drag_indicator</mat-icon>
+            </div>
 
             <mat-form-field appearance="outline" class="task-name-field">
               <mat-label>Task Name</mat-label>
@@ -87,9 +89,11 @@
               <input matInput type="number" formControlName="maxPoints" min="0" />
             </mat-form-field>
 
-            <button mat-icon-button type="button" color="warn" (click)="removeTask(i)">
-              <mat-icon>delete</mat-icon>
-            </button>
+            <div class="task-icon-col">
+              <button mat-icon-button type="button" color="warn" class="task-delete-btn" (click)="removeTask(i)">
+                <mat-icon>delete</mat-icon>
+              </button>
+            </div>
           </div>
         }
       </div>

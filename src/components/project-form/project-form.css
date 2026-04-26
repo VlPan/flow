@@ -3,7 +3,7 @@
   flex-direction: column;
   gap: 12px;
   padding: 8px 0;
-  min-width: 500px;
+  min-width: 0;
 }
 
 .full-width {
@@ -104,11 +104,22 @@
   padding: 4px 8px;
 }
 
+/* mat-form-field (outline) has a ~16px subscript area below the input.
+   Both icon wrappers are normalized to 40px (same as mat-icon-button),
+   then shifted up so they visually centre on the input box. */
+.task-icon-col {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin-bottom: 28px;
+}
+
 .drag-handle {
   cursor: grab;
   color: rgba(0,0,0,0.4);
-  flex-shrink: 0;
-  margin-bottom: 18px;
 }
 
 .drag-handle:active {

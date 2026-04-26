@@ -90,7 +90,7 @@ export class ProjectsPage {
 
   protected openCreateDialog(): void {
     this.dialog
-      .open(ProjectForm, { width: '620px', data: null })
+      .open(ProjectForm, { width: 'min(760px, 95vw)', maxWidth: '95vw', maxHeight: '95vh', data: null })
       .afterClosed()
       .subscribe((result) => {
         if (!result) return;
@@ -105,7 +105,7 @@ export class ProjectsPage {
 
   protected openEditDialog(project: Project): void {
     this.dialog
-      .open(ProjectForm, { width: '620px', data: project })
+      .open(ProjectForm, { width: 'min(760px, 95vw)', maxWidth: '95vw', data: project })
       .afterClosed()
       .subscribe((result) => {
         if (!result) return;
